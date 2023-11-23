@@ -1,0 +1,29 @@
+# This example workflow represents an independent workflow that tests something, runs after E2E test Job is finished
+# and makes use of startJob machine's access information
+name: Smoke test Job
+
+on:
+  workflow_dispatch:
+
+
+jobs:
+  controller:
+    uses: ./.github/workflows/mac-workflow-controller.yaml
+  noon-job:
+    needs: controller
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Run Smoke job initial step
+        run: |
+          echo "E2E test job is running with HOST=${{ needs.startJob.outputs.host }}"
+          echo "E2E test job is running with KEY=${{ needs.startJob.outputs.key }}"
+
+      - name: Run tests
+        run: |
+          echo "Testing like a devil"
+
+      - name: Archive artifacts
+        run: |
+          echo "archiving..."
