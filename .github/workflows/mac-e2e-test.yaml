@@ -1,0 +1,27 @@
+name: E2E test Job
+
+on:
+  workflow_dispatch:
+
+
+jobs:
+  controller:
+    uses: ./.github/workflows/mac-workflow-controller.yaml
+  noon-job:
+    needs: controller
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Run E2E job initial step
+        run: |
+          echo "E2E test job is running with HOST=${{ needs.startJob.outputs.host }}"
+          echo "E2E test job is running with KEY=${{ needs.startJob.outputs.key }}"
+
+      - name: Run tests
+        run: |
+          echo "Testing like a devil"
+
+      - name: Archive artifacts
+        run: |
+          echo "archiving..."
