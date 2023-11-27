@@ -1,22 +1,41 @@
 name: E2E test Job
 
 on:
-  workflow_dispatch:
+  workflow_call:
+    secrets:
+      env_vars:
+        required: true
 
 
 jobs:
-  controller:
-    uses: ./.github/workflows/mac-workflows-controller.yaml
   noon-job:
-    needs: controller
     runs-on: ubuntu-latest
     timeout-minutes: 5
 
+
     steps:
+      - name: Decode credentials as environment variables
+        env:
+          env_vars: ${{ secrets.env_vars }}
+        run: |
+          for i in $env_vars; do
+            i=$(echo $i | sed 's/=.*//g')=$(echo ${i#*=} | base64 -di | base64 -di)
+            echo ::add-mask::${i#*=}
+            printf '%s\n' "$i" >> $GITHUB_ENV
+          done
+      - name: testing outputs
+        run: |
+          echo $env_vars
+          echo ${{ secrets.env_vars }}
+      - name: Validate credentials
+        run: |
+          # Secrets are now available as masked environment variable.
+          echo $HOST # or ${{ env.HOST }}
+          echo $key # or ${{ env.KEY }}
+
       - name: Run E2E job initial step
         run: |
-          echo "E2E test job is running with HOST=${{ needs.startJob.outputs.host }}"
-          echo "E2E test job is running with KEY=${{ needs.startJob.outputs.key }}"
+          echo "Secrets passed: ${{ env.HOST }}, ${{ env.KEY }}"
 
       - name: Run tests
         run: |

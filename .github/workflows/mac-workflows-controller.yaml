@@ -11,7 +11,10 @@
 # 3. How can we make use of an access information if the jobs are done and we still have a dedicated time on the machine?
 # 4. What teams to include? This sound like totally different project/repo
 
-name: MacPipeline
+
+# Solution of passing secrets is based on https://github.com/orgs/community/discussions/13082
+
+name: Mac Workflow
 
 # env:
 #   CRON_START: '1 10 * * 4' # “At 10:01 on Thursday.”
@@ -23,7 +26,7 @@ name: MacPipeline
 #   - cron: '10 10 * * 4' # “At 10:10 on Thursday.”
 
 on:
-  [workflow_dispatch, workflow_call]
+  workflow_dispatch:
 
 jobs:
   startJob:
@@ -31,27 +34,54 @@ jobs:
     # if: ${{ github.event_name == 'schedule' && github.event.inputs.cron == ${{ env.CRON_START }} }}
 
     outputs:
-      host: ${{ steps.setSecret.outputs.host }}
-      key: ${{ steps.setSecret.outputs.key }}
-
+      HOST: ${{ steps.set_secret.outputs.HOST }}
+      KEY: ${{ steps.set_secret.outputs.KEY }}
+    
     steps:
       - name: Create an instance on AWS
         run: echo "Creating an instance here..."
 
-      - name: Set access information
-        id: setSecret
+      - name: Output encoded secrets
+        id: set_secret
+        # env:
+        #   HOST: ${{ secrets.HOST }}
+        #   KEY: ${{ secrets.KEY }}
         run: |
-          echo "::set-output name=host::host_ip_address"
-          echo "::set-output name=key::host_key"
+          host=$(echo HOST_SECRET | base64 -w0 | base64 -w0)
+          key=$(echo KEY_SECRET | base64 -w0 | base64 -w0)
+          echo "host is $host"
+          echo "HOST=$host" >> $GITHUB_OUTPUT
+          echo "key is: $key"
+          echo "KEY=$key" >> $GITHUB_OUTPUT
+
+  smokeJob: 
+    uses: ./.github/workflows/mac-smoke-test.yaml
+    needs: startJob
+    secrets:
+      env_vars: |
+        HOST=${{ needs.startJob.outputs.HOST }}
+        KEY=${{ needs.startJob.outputs.KEY }}
+
+  e2eJob: 
+    uses: ./.github/workflows/mac-e2e-test.yaml
+    needs: startJob
+    secrets:
+      env_vars: |
+        HOST=${{ needs.startJob.outputs.HOST }}
+        KEY=${{ needs.startJob.outputs.KEY }}
 
   finalJob:
     runs-on: ubuntu-latest
-    needs: startJob
+    needs: [startJob, smokeJob, e2eJob]
+    env:
+      env_vars: |
+        host: ${{ needs.startJob.outputs.host }}
+        key: ${{ needs.starJob.outputs.key }}
     # if: ${{ github.event_name == 'schedule' && github.event.inputs.cron == ${{ env.CRON_END }} }}
 
     outputs:
-      host: ${{ steps.setSecret.outputs.host }}
-      key: ${{ steps.setSecret.outputs.key }}
+      host: ${{ steps.startJob.outputs.host }}
+      key: ${{ steps.startJob.outputs.key }}
 
     steps:
       - name: Running Clean up Action
