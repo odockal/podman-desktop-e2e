@@ -6,7 +6,7 @@ on:
 
 jobs:
   controller:
-    uses: ./.github/workflows/mac-workflow-controller.yaml
+    uses: ./.github/workflows/mac-workflows-controller.yaml
   noon-job:
     needs: controller
     runs-on: ubuntu-latest
