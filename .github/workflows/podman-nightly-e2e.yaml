@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-name: Podman Desktop E2E with Podman installation
-=======
-name: E2E tests for Podman Desktop with Podman installation
->>>>>>> b5334d5 (Update qenvs to 0.6.0, upversion windows feature packs)
+name: Podman Desktop Playwright E2E with Podman Nightly
 
 on:
   schedule:
@@ -19,14 +15,6 @@ on:
         description: 'Podman Desktop repo branch'
         type: string
         required: true
-<<<<<<< HEAD
-      npm_target:
-        default: 'test:e2e'
-        description: 'npm target to run tests'
-        type: string
-        required: true
-=======
->>>>>>> b5334d5 (Update qenvs to 0.6.0, upversion windows feature packs)
 
 jobs:
   windows:
@@ -47,17 +35,9 @@ jobs:
       env:
         DEFAULT_FORK: 'containers'
         DEFAULT_BRANCH: 'main'
-<<<<<<< HEAD
-        DEFAULT_NPM_TARGET: 'test:e2e'
       run: |
         echo "FORK=${{ github.event.inputs.fork || env.DEFAULT_FORK }}" >> $GITHUB_ENV
         echo "BRANCH=${{ github.event.inputs.branch || env.DEFAULT_BRANCH }}" >> $GITHUB_ENV
-        echo "NPM_TARGET=${{ github.event.inputs.npm_target || env.DEFAULT_NPM_TARGET }}" >> $GITHUB_ENV
-=======
-      run: |
-        echo "FORK=${{ github.event.inputs.fork || env.DEFAULT_FORK }}" >> $GITHUB_ENV
-        echo "BRANCH=${{ github.event.inputs.branch || env.DEFAULT_BRANCH }}" >> $GITHUB_ENV
->>>>>>> b5334d5 (Update qenvs to 0.6.0, upversion windows feature packs)
 
     - name: Create instance
       run: |
@@ -103,7 +83,7 @@ jobs:
         # Check logs for the x session
         podman logs x-session
 
-    - name: Build Podman Desktop locally
+    - name: Setup dependencies and build Podman Desktop locally
       run: |
         podman run -d --name pde2e-builder-run \
           -e TARGET_HOST=$(cat host) \
@@ -116,34 +96,36 @@ jobs:
           -v $PWD:/data:z \
           quay.io/odockal/pde2e-builder:v0.0.1-snapshot  \
               pd-e2e/run.ps1 \
-                  -targetFolder pd-e2e \
-                  -resultsFolder results \
-                  -fork ${{ env.FORK }} \
-                  -branch ${{ env.BRANCH }}
+                -targetFolder pd-e2e \
+                -resultsFolder results \
+                -fork ${{ env.FORK }} \
+                -branch ${{ env.BRANCH }}
         # check logs
         podman logs -f pde2e-builder-run
-        
-    - name: Install Podman via Podman Desktop using GOAX
+
+    - name: Download Podman nightly, do not initialize and start
       run: |
-        cat results/pde2e-binary-path.log | awk '{print $1}'
-        # Run e2e tests
-        podman run --rm -d --name pd-e2e-windows \
+        podman run --rm -d --name pde2e-podman-run \
           -e TARGET_HOST=$(cat host) \
           -e TARGET_HOST_USERNAME=$(cat username) \
           -e TARGET_HOST_KEY_PATH=/data/id_rsa \
           -e TARGET_FOLDER=pd-e2e \
-          -e TARGET_RESULTS=pd-e2e-results.xml \
+          -e TARGET_RESULTS=results \
           -e OUTPUT_FOLDER=/data \
           -e DEBUG=true \
           -v $PWD:/data:z \
-          quay.io/rhqp/podman-desktop-e2e:v1.1.0-windows-amd64  \
-              pd-e2e/run.ps1 \
-                  -targetFolder pd-e2e \
-                  -wslInstallFix 'false' \
-                  -junitResultsFilename pd-e2e-results.xml \
-                  -pdPath "$(cat results/pde2e-binary-path.log | tr '\n' " ")"
-        # Check logs 
-        podman logs -f pd-e2e-windows
+          quay.io/odockal/pde2e-podman:v0.0.1-snapshot  \
+            pd-e2e/run.ps1 \
+              -downloadUrl "https://api.cirrus-ci.com/v1/artifact/github/containers/podman/Artifacts/binary/podman-remote-release-windows_amd64.zip" \
+              -version '5.0.0-dev' \
+              -targetFolder pd-e2e \
+              -resultsFolder results \
+              -initialize 0 \
+              -rootful 0 \
+              -start 0 \
+              -installWSL 0
+        # check logs
+        podman logs -f pde2e-podman-run
 
     - name: Run Podman Desktop Playwright E2E tests
       run: |
@@ -158,15 +140,15 @@ jobs:
           -v $PWD:/data:z \
           quay.io/odockal/pde2e-runner:v0.0.1-snapshot  \
               pd-e2e/run.ps1 \
-                  -targetFolder pd-e2e \
-                  -resultsFolder results \
-                  -fork ${{ env.FORK }} \
-                  -branch ${{ env.BRANCH }} \
-<<<<<<< HEAD
-                  -npmTarget ${{ env.NPM_TARGET }}
-=======
-                  -npmTarget "test:e2e"
->>>>>>> b5334d5 (Update qenvs to 0.6.0, upversion windows feature packs)
+                -targetFolder pd-e2e \
+                -resultsFolder results \
+                -podmanPath $(cat results/podman-location.log) \
+                -fork ${{ env.FORK }} \
+                -branch ${{ env.BRANCH }} \
+                -npmTarget "test:e2e" \
+                -initialize 1 \
+                -start 1 \
+                -rootful 0
         # check logs
         podman logs -f pde2e-runner-run
 
@@ -198,14 +180,11 @@ jobs:
         report_paths: '**/*results.xml'
 
     - name: Upload test artifacts
-<<<<<<< HEAD
-      uses: actions/upload-artifact@v4
-=======
       uses: actions/upload-artifact@v3
->>>>>>> b5334d5 (Update qenvs to 0.6.0, upversion windows feature packs)
       if: always()
       with:
         name: results-e2e-${{ matrix.windows-version }}${{ matrix.windows-featurepack }}
         path: |
           results/*
-          pd-e2e-results.xml
+
+
