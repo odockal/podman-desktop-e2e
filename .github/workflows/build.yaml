@@ -35,7 +35,11 @@ jobs:
       run: ARCH=${{ matrix.arch }} make build-darwin
 
     - name: upload artifact
+<<<<<<< HEAD
       uses: actions/upload-artifact@v4
+=======
+      uses: actions/upload-artifact@v3
+>>>>>>> f462ed3 (chore(deps): update actions/setup-go action to v5)
       with:
         name: darwin-${{ matrix.arch }}
         path: "./out/darwin-${{ matrix.arch }}/pd-e2e"
@@ -62,7 +66,11 @@ jobs:
       run:  $env:ARCH='${{ matrix.arch }}'; make build-windows
 
     - name: upload artifact
+<<<<<<< HEAD
       uses: actions/upload-artifact@v4
+=======
+      uses: actions/upload-artifact@v3
+>>>>>>> f462ed3 (chore(deps): update actions/setup-go action to v5)
       with:
         name: windows-${{ matrix.arch }}
         path: "./out/windows-${{ matrix.arch }}/pd-e2e.exe"
@@ -85,7 +93,11 @@ jobs:
       run: mkdir -p oci/bin/${{ matrix.os }}-${{ matrix.arch }}
 
     - name: Copy binary
+<<<<<<< HEAD
       uses: actions/download-artifact@v4
+=======
+      uses: actions/download-artifact@v3
+>>>>>>> f462ed3 (chore(deps): update actions/setup-go action to v5)
       with:
         name: ${{ matrix.os }}-${{ matrix.arch }}
         path: oci/bin/${{ matrix.os }}-${{ matrix.arch }}
@@ -127,7 +139,11 @@ jobs:
       run: mkdir -p oci/bin/${{ matrix.os }}-${{ matrix.arch }}
 
     - name: Copy binary
+<<<<<<< HEAD
       uses: actions/download-artifact@v4
+=======
+      uses: actions/download-artifact@v3
+>>>>>>> f462ed3 (chore(deps): update actions/setup-go action to v5)
       with:
         name: ${{ matrix.os }}-${{ matrix.arch }}
         path: oci/bin/${{ matrix.os }}-${{ matrix.arch }}
