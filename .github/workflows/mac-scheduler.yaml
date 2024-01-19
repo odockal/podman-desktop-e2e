@@ -38,22 +38,23 @@ jobs:
     
     steps:
       - name: Create a host instance on AWS
+        # run: |
+        #   # Create host only - How to get host ID?
+        #   # podman run -d --name mac-create --rm \
+        #   # -v ${PWD}:/workspace:z \
+        #   # -e AWS_ACCESS_KEY_ID=${{ AWS_ACCESS_KEY_ID }} \
+        #   # -e AWS_SECRET_ACCESS_KEY='${{ AWS_SECRET_ACCESS_KEY }}' \
+        #   # -e AWS_DEFAULT_REGION=us-east-1 \
+        #   # quay.io/rhqp/qenvs:${{ matrix.qenvs-version }} aws \
+        #   #   mac create \
+        #   #     --host-only
+        #   #     --project-name mac-desktop \
+        #   #     --backed-url file:///workspace \
+        #   #     --conn-details-output /workspace \
+        #   # # Check logs 
+        #   # podman logs -f mac-create
+        #   # Simulate step that creates dedicatedHostID
         run: |
-          # Create host only - How to get host ID?
-          # podman run -d --name mac-create --rm \
-          # -v ${PWD}:/workspace:z \
-          # -e AWS_ACCESS_KEY_ID=${{ AWS_ACCESS_KEY_ID }} \
-          # -e AWS_SECRET_ACCESS_KEY='${{ AWS_SECRET_ACCESS_KEY }}' \
-          # -e AWS_DEFAULT_REGION=us-east-1 \
-          # quay.io/rhqp/qenvs:${{ matrix.qenvs-version }} aws \
-          #   mac create \
-          #     --host-only
-          #     --project-name mac-desktop \
-          #     --backed-url file:///workspace \
-          #     --conn-details-output /workspace \
-          # # Check logs 
-          # podman logs -f mac-create
-          # Simulate step that creates dedicatedHostID
           echo "asd123-asd11-44556" >> /workspace/dedicatedHostID
           # Read Host ID, encrypt it and pass it to the gha outputs
           echo "Host ID: $(cat /workspace/dedicatedHostID)"
