@@ -36,23 +36,24 @@ jobs:
         echo $HOST_D # or ${{ env.HOST_ID }}
 
     - name: Create instance on the host passing --host-id
+      # run: |
+      #   # # Create instance with provided HOST_ID
+      #   # podman run -d --name mac-create --rm \
+      #   # -v ${PWD}:/workspace:z \
+      #   # -e AWS_ACCESS_KEY_ID=${{ AWS_ACCESS_KEY_ID }} \
+      #   # -e AWS_SECRET_ACCESS_KEY='${{ AWS_SECRET_ACCESS_KEY }}' \
+      #   # -e AWS_DEFAULT_REGION=us-east-1 \
+      #   # quay.io/rhqp/qenvs:${{ matrix.qenvs-version }} aws \
+      #   #   mac create \
+      #   #     --host-id ${{ env.HOST_ID }} 
+      #   #     --project-name mac-desktop \
+      #   #     --backed-url file:///workspace \
+      #   #     --conn-details-output /workspace \
+      #   #     --version '${{ matrix.version }}' \
+      #   #     --arch '${{ matrix.arch }}'
+      #   # # Check logs 
+      #   # podman logs -f mac-create
       run: |
-        # # Create instance with provided HOST_ID
-        # podman run -d --name mac-create --rm \
-        # -v ${PWD}:/workspace:z \
-        # -e AWS_ACCESS_KEY_ID=${{ AWS_ACCESS_KEY_ID }} \
-        # -e AWS_SECRET_ACCESS_KEY='${{ AWS_SECRET_ACCESS_KEY }}' \
-        # -e AWS_DEFAULT_REGION=us-east-1 \
-        # quay.io/rhqp/qenvs:${{ matrix.qenvs-version }} aws \
-        #   mac create \
-        #     --host-id ${{ env.HOST_ID }} 
-        #     --project-name mac-desktop \
-        #     --backed-url file:///workspace \
-        #     --conn-details-output /workspace \
-        #     --version '${{ matrix.version }}' \
-        #     --arch '${{ matrix.arch }}'
-        # # Check logs 
-        # podman logs -f mac-create
         echo "Passing ${{ env.HOST_ID }} info"
 
     # - name: Check instance system info
@@ -102,20 +103,21 @@ jobs:
 
     - name: Destroy instance
       if: always()
+      # run: |
+      #   # # Destroy instance
+      #   # podman run -d --name mac-destroy --rm \
+      #   #   -v ${PWD}:/workspace:z \
+      #   #   -e AWS_ACCESS_KEY_ID=${{ AWS_ACCESS_KEY_ID }} \
+      #   #   -e AWS_SECRET_ACCESS_KEY='${{ AWS_SECRET_ACCESS_KEY }}' \
+      #   #   -e AWS_DEFAULT_REGION=us-east-1 \
+      #   #   quay.io/rhqp/qenvs:${{ matrix.qenvs-version }} aws \
+      #   #     mac destroy \
+      #   #     --host-id ${{ env.HOST_ID }}
+      #   #     --project-name mac-desktop \
+      #   #     --backed-url 'file:///workspace'
+      #   # # Check logs
+      #   # podman logs -f mac-destroy
       run: |
-        # # Destroy instance
-        # podman run -d --name mac-destroy --rm \
-        #   -v ${PWD}:/workspace:z \
-        #   -e AWS_ACCESS_KEY_ID=${{ AWS_ACCESS_KEY_ID }} \
-        #   -e AWS_SECRET_ACCESS_KEY='${{ AWS_SECRET_ACCESS_KEY }}' \
-        #   -e AWS_DEFAULT_REGION=us-east-1 \
-        #   quay.io/rhqp/qenvs:${{ matrix.qenvs-version }} aws \
-        #     mac destroy \
-        #     --host-id ${{ env.HOST_ID }}
-        #     --project-name mac-desktop \
-        #     --backed-url 'file:///workspace'
-        # # Check logs
-        # podman logs -f mac-destroy
         echo "Destroying instance with ${{ env.HOST_ID }}"
 
     # - name: Publish Test Report
