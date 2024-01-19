@@ -56,6 +56,7 @@ jobs:
         #   # Simulate step that creates dedicatedHostID
         run: |
           # requires sudo! mkdir /workspace
+          mkdir workspace
           echo "asd123-asd11-44556" >> $GITHUB_WORKSPACE/workspace/dedicatedHostID
           # Read Host ID, encrypt it and pass it to the gha outputs
           echo "Host ID: $(cat $GITHUB_WORKSPACE/workspace/dedicatedHostID)"
