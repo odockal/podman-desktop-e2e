@@ -55,10 +55,10 @@ jobs:
         #   # podman logs -f mac-create
         #   # Simulate step that creates dedicatedHostID
         run: |
-          mkdir /workspace
-          echo "asd123-asd11-44556" >> /workspace/dedicatedHostID
+          # requires sudo! mkdir /workspace
+          echo "asd123-asd11-44556" >> ${{ GITHUB_WORKSPACE }}/workspace/dedicatedHostID
           # Read Host ID, encrypt it and pass it to the gha outputs
-          echo "Host ID: $(cat /workspace/dedicatedHostID)"
+          echo "Host ID: $(cat ${{ GITHUB_WORKSPACE }}/workspace/dedicatedHostID)"
 
       - name: Output encoded secrets
         id: set_secret
