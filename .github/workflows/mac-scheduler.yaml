@@ -56,9 +56,9 @@ jobs:
         #   # Simulate step that creates dedicatedHostID
         run: |
           # requires sudo! mkdir /workspace
-          echo "asd123-asd11-44556" >> ${{ GITHUB_WORKSPACE }}/workspace/dedicatedHostID
+          echo "asd123-asd11-44556" >> $GITHUB_WORKSPACE/workspace/dedicatedHostID
           # Read Host ID, encrypt it and pass it to the gha outputs
-          echo "Host ID: $(cat ${{ GITHUB_WORKSPACE }}/workspace/dedicatedHostID)"
+          echo "Host ID: $(cat $GITHUB_WORKSPACE/workspace/dedicatedHostID)"
 
       - name: Output encoded secrets
         id: set_secret
@@ -66,7 +66,7 @@ jobs:
         #   HOST: ${{ secrets.HOST }}
         #   KEY: ${{ secrets.KEY }}
         run: |
-          host_id=$(cat /workspace/dedicatedHostID | base64 -w0 | base64 -w0)
+          host_id=$(cat $GITHUB_WORKSPACE/workspace/dedicatedHostID | base64 -w0 | base64 -w0)
           echo "host_id is $host_id"
           echo "host_id=$host_id" >> $GITHUB_OUTPUT
 
