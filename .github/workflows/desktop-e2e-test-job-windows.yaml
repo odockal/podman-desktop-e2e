@@ -44,26 +44,6 @@ on:
         description: 'Podman machine configuration options, no spaces'
         type: 'string'
         required: true
-      podman_initialize:
-        default: '0'
-        description: 'Initialize Podman Machine'
-        type: 'string'
-        required: true
-      podman_start:
-        default: '0'
-        description: 'Start Podman Machine'
-        type: 'string'
-        required: true
-      podman_rootful:
-        default: '0'
-        description: 'Rootful Podman Machine'
-        type: 'string'
-        required: true
-      podman_networking:
-        default: '0'
-        description: 'User Mode Networking Podman Machine'
-        type: 'string'
-        required: true
       env_vars:
         default: 'TEST_PODMAN_MACHINE=true'
         description: 'Env. Variables passed into target machine, ie: VAR1=xxx,VAR2=true,VAR3=15,VAR4="Pass me along"'
