@@ -14,19 +14,9 @@ on:
         description: 'Podman Desktop repo branch'
         type: string
         required: true
-      ext_repo:
-        default: 'podman-desktop-redhat-account-ext'
-        description: 'Podman Desktop extension repository'
-        type: string
-        required: true
-      ext_fork:
-        default: 'redhat-developer'
-        description: 'Podman Desktop Extension repo fork'
-        type: string
-        required: true
-      ext_branch:
-        default: 'main'
-        description: 'Podman Desktop Extension repo branch'
+      ext_repo_options:
+        default: 'REPO=redhat-developer,FORK=redhat-developer,BRANCH=main'
+        description: 'Podman Desktop Extension repo, fork and branch'
         type: string
         required: true
       ext_tests:
@@ -52,6 +42,26 @@ on:
       podman_options:
         default: 'INIT=0,START=0,ROOTFULL=0,ROOTLESS=0,NETWORKING=0'
         description: 'Podman machine configuration options, no spaces'
+        type: 'string'
+        required: true
+      podman_initialize:
+        default: '0'
+        description: 'Initialize Podman Machine'
+        type: 'string'
+        required: true
+      podman_start:
+        default: '0'
+        description: 'Start Podman Machine'
+        type: 'string'
+        required: true
+      podman_rootful:
+        default: '0'
+        description: 'Rootful Podman Machine'
+        type: 'string'
+        required: true
+      podman_networking:
+        default: '0'
+        description: 'User Mode Networking Podman Machine'
         type: 'string'
         required: true
       env_vars:
@@ -80,22 +90,19 @@ jobs:
       env:
         DEFAULT_FORK: 'containers'
         DEFAULT_BRANCH: 'main'
-        DEFAULT_EXT_REPO: 'podman-desktop-redhat-account-ext'
-        DEFAULT_EXT_FORK: 'redhat-developer'
-        DEFAULT_EXT_BRANCH: 'main'
         DEFAULT_EXT_TESTS: '0'
         DEFAULT_NPM_TARGET: 'test:e2e'
-        DEFAULT_PODMAN_OPTIONS: 'INIT=0,START=0,ROOTFULL=0,NETWORKING=0'
+        DEFAULT_PODMAN_OPTIONS: 'INIT=0,START=0,ROOTFULL=0,ROOTLESS=0,NETWORKING=0'
+        DEFAULT_EXT_REPO_OPTIONS: 'REPO=redhat-developer,FORK=redhat-developer,BRANCH=main'
       run: |
         echo "FORK=${{ github.event.inputs.fork || env.DEFAULT_FORK }}" >> $GITHUB_ENV
         echo "BRANCH=${{ github.event.inputs.branch || env.DEFAULT_BRANCH }}" >> $GITHUB_ENV
         echo "NPM_TARGET=${{ github.event.inputs.npm_target || env.DEFAULT_NPM_TARGET }}" >> $GITHUB_ENV
-        echo "EXT_REPO=${{ github.event.inputs.ext_repo || env.DEFAULT_EXT_REPO }}" >> $GITHUB_ENV
-        echo "EXT_FORK=${{ github.event.inputs.ext_fork || env.DEFAULT_EXT_FORK }}" >> $GITHUB_ENV
-        echo "EXT_BRANCH=${{ github.event.inputs.ext_branch || env.DEFAULT_EXT_BRANCH }}" >> $GITHUB_ENV
         echo "EXT_TESTS=${{ github.event.inputs.ext_tests || env.DEFAULT_EXT_TESTS }}" >> $GITHUB_ENV
-        echo "${{ github.event.inputs.podman_options" | awk -F ',' \
-         '{for (i=1; i<=NF; i++) {split($i, kv, "="); echo "PODMAN_"kv[1]"="kv[2]}} >> $GITHUB_ENV'
+        echo "${{ github.event.inputs.podman_options || env.DEFAULT_PODMAN_OPTIONS }}" | awk -F ',' \
+         '{for (i=1; i<=NF; i++) {split($i, kv, "="); echo "PODMAN_"kv[1]"="kv[2]}}' >> $GITHUB_ENV'
+        echo "${{ github.event.inputs.ext_repo_options || env.DEFAULT_EXT_REPO_OPTIONS }}" | awk -F ',' \
+         '{for (i=1; i<=NF; i++) {split($i, kv, "="); echo "EXT_"kv[1]"="kv[2]}}' >> $GITHUB_ENV
 
     - name: test env vars.
       run: |
@@ -103,11 +110,6 @@ jobs:
         echo "PODMAN_S: ${{ env.PODMAN_START }}"
         echo "PODMAN_R: ${{ env.PODMAN_ROOTFULL }}"
         echo "PODMAN_Net: ${{ env.PODMAN_NETWORKING }}"
-        echo "BRANCH=${{ github.event.inputs.branch || env.DEFAULT_BRANCH }}" >> $GITHUB_ENV
-        echo "NPM_TARGET=${{ github.event.inputs.npm_target || env.DEFAULT_NPM_TARGET }}" >> $GITHUB_ENV
-        echo "EXT_REPO=${{ github.event.inputs.ext_repo || env.DEFAULT_EXT_REPO }}" >> $GITHUB_ENV
-        echo "EXT_FORK=${{ github.event.inputs.ext_fork || env.DEFAULT_EXT_FORK }}" >> $GITHUB_ENV
-        echo "EXT_BRANCH=${{ github.event.inputs.ext_branch || env.DEFAULT_EXT_BRANCH }}" >> $GITHUB_ENV
-        echo "EXT_TESTS=${{ github.event.inputs.ext_tests || env.DEFAULT_EXT_TESTS }}" >> $GITHUB_ENV
-        echo "${{ github.event.inputs.podman_options" | awk -F ',' \
-         '{for (i=1; i<=NF; i++) {split($i, kv, "="); echo "PODMAN_"kv[1]"="kv[2]}} >> $GITHUB_ENV'
+        echo "EXT_REPO: ${{ env.EXT_REPO }}"
+        echo "EXT_FORK: ${{ env.EXT_REPO }}"
+        echo "EXT_BRANCH: ${{ env.EXT_BRANCH }}"
