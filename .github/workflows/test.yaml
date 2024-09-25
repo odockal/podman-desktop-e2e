@@ -49,7 +49,7 @@ jobs:
         - windows-version: '10'
           windows-featurepack: '22h2-ent'
         - windows-version: ${{ (github.event.inputs.debug && github.event.inputs.debug == 'true') && 'N/A' || '11' }}
-          windows-featurepack: '23h2-ent'
+          windows-featurepack: ${{ (github.event.inputs.debug && github.event.inputs.debug == 'true') && 'N/A' || '23h2-ent' }}
 
     steps:
     - name: Set the default env. variables
