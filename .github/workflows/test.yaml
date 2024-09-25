@@ -1,8 +1,9 @@
 name: Debugging workflow
+run-name: Podman Desktop E2E with Podman installation ${{ github.event.input.debug == 'true' && 'Debug' || '' }}
 
 on:
   schedule:
-    - cron:  '*/3 * * * *'
+    - cron:  '*/5 * * * *'
   workflow_dispatch:
     inputs:
       fork:
