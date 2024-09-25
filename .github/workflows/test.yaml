@@ -1,5 +1,5 @@
 name: Debugging workflow
-run-name: Podman Desktop E2E with Podman installation ${{ github.event.input.debug == 'true' && 'Debug' || '' }}
+run-name: Podman Desktop E2E with Podman installation ${{ inputs.debug == 'true' && 'Debug' || '' }}
 
 on:
   schedule:
