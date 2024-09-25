@@ -2,7 +2,7 @@ name: Debugging workflow
 
 on:
   schedule:
-    - cron:  '*/5 * * * *'
+    - cron:  '*/3 * * * *'
   workflow_dispatch:
     inputs:
       fork:
@@ -26,10 +26,11 @@ on:
         type: 'string'
         required: true
       debug:
-        default: 'false'
         description: 'For debugging to restrict what is run'
-        type: 'string'
-        required: false
+        type: choice
+        options:
+          - 'false'
+          - 'true'
 
 jobs:
   windows:
