@@ -45,11 +45,13 @@ jobs:
       matrix:
         windows-version: ['10','11']
         windows-featurepack: ['22h2-ent', '23h2-ent']
-        include:
+        exclude:
         - windows-version: '10'
+          windows-featurepack: '23h2-ent'
+        - windows-version: '11'
           windows-featurepack: '22h2-ent'
-        - windows-version: ${{ (github.event.inputs.debug && github.event.inputs.debug == 'true') && 'N/A' || '11' }}
-          windows-featurepack: ${{ (github.event.inputs.debug && github.event.inputs.debug == 'true') && 'N/A' || '23h2-ent' }}
+        - windows-version: ${{ (github.event.inputs.debug && github.event.inputs.debug == 'true') && '11' || 'N/A' }}
+          windows-featurepack: ${{ (github.event.inputs.debug && github.event.inputs.debug == 'true') && '23h2-ent' || 'N/A' }}
 
     steps:
     - name: Set the default env. variables
