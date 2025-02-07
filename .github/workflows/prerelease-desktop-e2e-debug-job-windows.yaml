@@ -139,7 +139,7 @@ jobs:
         cat << EOF > ./id_rsa
         ${{ secrets.REMOTE_RSA }}
         EOF
-        chmod 600 ./id_rsa
+        # chmod 600 ./id_rsa
         cat << EOF > ./userpassword
         ${{ secrets.REMOTE_PASS }}
         EOF
