@@ -139,7 +139,9 @@ jobs:
         cat << EOF > ./id_rsa
         ${{ secrets.REMOTE_RSA }}
         EOF
-        # chmod 600 ./id_rsa
+        chmod 600 ./id_rsa
+        ls -al id_rsa
+        chrown -R $(whoami):$(whoami) ./id_rsa
         cat << EOF > ./userpassword
         ${{ secrets.REMOTE_PASS }}
         EOF
@@ -147,6 +149,7 @@ jobs:
     - name: Check instance system info
       run: |
         ssh -i id_rsa \
+          -vvv
           -o StrictHostKeyChecking=no \
           -o UserKnownHostsFile=/dev/null \
           -o ServerAliveInterval=30 \
