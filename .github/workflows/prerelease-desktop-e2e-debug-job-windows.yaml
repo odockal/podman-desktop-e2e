@@ -31,8 +31,7 @@ on:
         type: string
         required: true
       podman_desktop_url:
-        default: 'https://github.com/podman-desktop/testing-prereleases/releases/download/v1.16.0-202501090247-57bf7774e68/podman-desktop-1.16.0-202501090247-57bf7774e68-x64.exe'
-        description: 'podman desktop nightly exe url'
+        description: 'podman desktop nightly setup exe url, if empty, latest will be used'
         type: string
         required: false
       podman_options:
