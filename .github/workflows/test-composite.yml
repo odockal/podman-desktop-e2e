@@ -11,7 +11,7 @@ jobs:
         uses: ./get-pd-latest
         with:
           suffix: 'setup-x64.exe'
-          gh_token: ${{ secret.GITHUB_TOKEN }}
+          gh_token: ${{ secrets.GITHUB_TOKEN }}
       - run: |
           echo "URL: $URL"
         shell: bash
