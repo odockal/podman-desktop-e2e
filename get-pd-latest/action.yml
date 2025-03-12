@@ -44,10 +44,3 @@ runs:
           "https://api.github.com/repos/podman-desktop/testing-prereleases/releases/$id/assets" | jq -r --arg suffix "$SUFFIX" '.[] | select (.name | test("$suffix$"))' | jq -r '.browser_download_url')
         echo "Podman Desktop testing prerelease url: ${url}"
         echo "download-url=$(echo $url)" >> $GITHUB_OUTPUT
-
-    - name: Test Output
-      env:
-        URL: ${{ steps.download-url-step.outputs.download-url }}"
-      run: echo "Output value: $URL"
-      shell: bash
-
