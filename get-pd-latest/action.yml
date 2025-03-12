@@ -46,6 +46,8 @@ runs:
         echo "download-url=$(echo $url)" >> $GITHUB_OUTPUT
 
     - name: Test Output
-      run: echo "Output value: ${{ steps.download-url-step.outputs.download-url }}"
+      env:
+        URL: ${{ steps.download-url-step.outputs.download-url }}"
+      run: echo "Output value: $URL"
       shell: bash
 
