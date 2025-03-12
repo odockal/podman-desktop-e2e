@@ -1,0 +1,19 @@
+on: workflow_dispatch
+
+jobs:
+  my_job:
+    runs-on: ubuntu-latest
+    name: A job to get pd latest url
+    steps:
+      - uses: actions/checkout@v4
+      
+      - id: url
+        uses: ./get-pd-latest
+        with:
+          suffix: 'setup-x64.exe'
+          gh_token: ${{ secret.GITHUB_TOKEN }}
+      - run: |
+          echo "URL: $URL"
+        shell: bash
+        env:
+          URL: ${{ steps.url.outputs.download-url }}
