@@ -41,6 +41,6 @@ runs:
           -H "Accept: application/vnd.github+json" \
           -H "Authorization: Bearer ${{ env.GH_TOKEN }}" \
           -H "X-GitHub-Api-Version: 2022-11-28" \
-          "https://api.github.com/repos/podman-desktop/testing-prereleases/releases/$id/assets" | jq -r --arg SUFFIX "$SUFFIX" '.[] | select (.name | test("$SUFFIX$"))' | jq -r '.browser_download_url')
+          "https://api.github.com/repos/podman-desktop/testing-prereleases/releases/$id/assets" | jq -r --arg suffix "$SUFFIX\$" '.[] | select (.name | test($suffix))' | jq -r '.browser_download_url')
         echo "Podman Desktop testing prerelease url: ${url}"
         echo "download-url=$(echo $url)" >> $GITHUB_OUTPUT
