@@ -66,8 +66,6 @@ inputs:
   tags:
     description: 'Additional tags for the instance in key=value,key2=value2 format'
     required: false
-    default: 'project=podman-desktop'
-    type: string
     example: 'project=podman-desktop'
   backed-url:
     description: 'The backed URL for instance creation'
