@@ -96,11 +96,19 @@ inputs:
 runs:
   using: 'composite'
   steps:
+    - name: Set the default env. variables
+      shell: bash
+      env:
+        DEFAULT_TAGS: 'project=podman-desktop,workflow=${{ github.workflow }},run=https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }},source=github,org=${{ github.repository_owner }}'
+      run: |
+        echo "TAGS=${{ inputs.tags || env.DEFAULT_TAGS }}" >> $GITHUB_ENV
+          
     - name: Create instance
       shell: bash
       run: |
+        echo "Tags: ${{ env.TAGS }}"
         # Create instance using resources approach and capture container ID
-        CONTAINER_ID=$(podman run -d --name windows-create --rm \
+        CONTAINER_ID=$(xpodman run -d --name windows-create --rm \
           -v ${PWD}:/workspace:z \
           -e ARM_TENANT_ID=${{ inputs.arm-tenant-id }} \
           -e ARM_SUBSCRIPTION_ID=${{ inputs.arm-subscription-id }} \
@@ -117,7 +125,7 @@ runs:
           --cpus ${{ inputs.cpus }} \
           --memory ${{ inputs.memory }} \
           --nested-virt \
-          --tags ${{ inputs.tags }} \
+          --tags ${{ env.TAGS }} \
           --spot-excluded-regions ${{ inputs.excluded-regions }} \
           --spot)
         
