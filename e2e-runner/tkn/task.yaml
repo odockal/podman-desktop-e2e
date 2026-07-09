@@ -2,7 +2,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
-  name: pde2e-image
+  name: e2e-runner-image
   labels:
     app.kubernetes.io/version: "0.1"
     redhat.com/product: podman-desktop
@@ -41,8 +41,8 @@ spec:
 
   # Image Configuration
   - name: image-version
-    description: pde2e-image version
-    default: '0.1.1'
+    description: 'e2e-runner image version, ie: v0.1.1 or nightly'
+    default: 'nightly'
 
   # Podman Configuration
   - name: podman-download-url
@@ -159,7 +159,7 @@ spec:
 
   steps:
   - name: e2e-with-podman-setup
-    image: quay.io/odockal/pde2e-image:v$(params.image-version)-$(params.os)
+    image: ghcr.io/podman-desktop/e2e-runner:$(params.image-version)-$(params.os)
     # We do not have a strict control on versions (as so they can be override)
     # force here to pull everytime just in case it is overriden
     imagePullPolicy: Always
