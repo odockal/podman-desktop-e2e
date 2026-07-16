@@ -135,6 +135,11 @@ class DailyReporter:
         else:
             sections.append("*No failed workflow runs in the overnight window.*\n")
 
+        overnight_passed = [wf for wf in overnight if wf.conclusion == 'success']
+        if overnight_passed:
+            sections.append("### Passing Runs\n")
+            self._append_grouped_workflows(sections, overnight_passed)
+
         if fallback:
             sections.append("### Latest Runs (no overnight activity)\n")
             self._append_grouped_workflows(sections, fallback)
