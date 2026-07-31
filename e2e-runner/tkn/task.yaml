@@ -326,11 +326,11 @@ spec:
 
     resources:
       requests:
-        memory: "50Mi"
-        cpu: "5m"
+        memory: "128Mi"
+        cpu: "100m"
       limits:
-        memory: "70Mi"
-        cpu: "10m"
+        memory: "512Mi"
+        cpu: "500m"
 
   sidecars:
   - name: fake-rdp
@@ -345,8 +345,8 @@ spec:
       value: $(params.userpassword)
     resources:
       requests:
-        memory: "30Mi"
-        cpu: "5m"
+        memory: "128Mi"
+        cpu: "100m"
       limits:
-        memory: "70Mi"
-        cpu: "10m"
+        memory: "512Mi"
+        cpu: "500m"
