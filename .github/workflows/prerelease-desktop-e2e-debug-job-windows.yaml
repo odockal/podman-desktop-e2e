@@ -36,7 +36,7 @@ on:
         type: 'string'
         required: true
       images_version:
-        default: 'BUILDER="v0.0.3",PODMAN="v0.0.3",RUNNER="v0.0.3"'
+        default: 'BUILDER="v0.0.3",PODMAN="v0.0.3",RUNNER="v0.1.1"'
         description: 'Testing images versions, no spaces'
         type: 'string'
         required: true
@@ -179,7 +179,7 @@ jobs:
     - name: Run Podman Desktop Playwright E2E tests
       uses: podman-desktop/e2e/.github/actions/run-playwright-test@main
       with:
-        pde2e-runner-tag: ${{ env.PDE2E_RUNNER }}
+        e2e-runner-tag: ${{ env.PDE2E_RUNNER }}
         podman-desktop-url: ${{ env.PODMAN_DESKTOP_URL }}
         fork-repo: ${{ env.PD_FORK }}
         branch-name: ${{ env.PD_BRANCH }}

@@ -15,12 +15,12 @@
 # SPDX-License-Identifier: Apache-2.0
 
 name: 'Run Podman Desktop Playwright E2E tests'
-description: 'Runs Playwright E2E tests for Podman Desktop in a container.'
+description: 'Runs Playwright E2E tests for Podman Desktop via the e2e-runner image.'
 inputs:
-  builder-image:
-    description: 'The base name for the pde2e-builder container image.'
+  runner-image:
+    description: 'Base name for the e2e-runner container image.'
     required: false
-    default: 'quay.io/odockal/pde2e-runner'
+    default: 'ghcr.io/podman-desktop/e2e-runner'
   target-folder:
     description: 'The target folder on the remote host where the build will occur.'
     required: false
@@ -29,8 +29,8 @@ inputs:
     description: 'The folder for storing build results on the remote host.'
     required: false
     default: 'results'
-  pde2e-runner-tag:
-    description: 'The tag for the pde2e-runner container image.'
+  e2e-runner-tag:
+    description: 'Tag for the e2e-runner container image (without OS suffix).'
     required: true
   fork-repo:
     description: 'The GitHub fork repository to use for the tests.'
@@ -155,7 +155,7 @@ runs:
           PODMAN_PATH="-podmanPath $(cat results/podman-location.log)"
         fi
 
-        podman run -d --name pde2e-runner-run \
+        podman run -d --name e2e-runner-run \
           -e TARGET_HOST=$(cat host) \
           -e TARGET_HOST_USERNAME=$(cat username) \
           -e TARGET_HOST_KEY_PATH=/data/id_rsa \
@@ -164,8 +164,8 @@ runs:
           -e OUTPUT_FOLDER=/data \
           -e DEBUG=true \
           -v $PWD:/data:z \
-          -v $PWD/secrets.txt:/opt/pde2e-runner/secrets.txt:z \
-          ${{ inputs.builder-image }}:${{ inputs.pde2e-runner-tag }}-windows \
+          -v $PWD/secrets.txt:/opt/e2e-runner/secrets.txt:z \
+          ${{ inputs.runner-image }}:${{ inputs.e2e-runner-tag }}-windows \
               pd-e2e/runner.ps1 \
                 -targetFolder ${{ inputs.target-folder }} \
                 -resultsFolder ${{ inputs.results-folder }} \
@@ -189,4 +189,4 @@ runs:
                 ${SCRIPT_PATH_PARAM}
 
         # check logs
-        podman logs -f pde2e-runner-run
+        podman logs -f e2e-runner-run

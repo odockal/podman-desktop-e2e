@@ -26,7 +26,7 @@ on:
           - 'false'
           - 'true'
       images_version:
-        default: 'BUILDER="v0.0.3",PODMAN="v0.0.3",RUNNER="v0.0.3"'
+        default: 'BUILDER="v0.0.3",PODMAN="v0.0.3",RUNNER="v0.1.1"'
         description: 'Testing images versions, no spaces'
         type: 'string'
         required: true
@@ -76,7 +76,7 @@ jobs:
         DEFAULT_PODMAN_PROVIDER: 'wsl'
         DEFAULT_ENV_VARS: 'TEST_PODMAN_MACHINE=true'
         DEFAULT_PODMAN_OPTIONS: 'INIT=1,START=1,ROOTFUL=1,NETWORKING=0'
-        DEFAULT_IMAGES_VERSIONS: 'BUILDER="v0.0.3",PODMAN="v0.0.3",RUNNER="v0.0.3"'
+        DEFAULT_IMAGES_VERSIONS: 'BUILDER="v0.0.3",PODMAN="v0.0.3",RUNNER="v0.1.1"'
       run: |
         # Parse fork and branch from repo_branch parameter
         REPO_BRANCH_INPUT="${{ github.event.inputs.repo_branch || env.DEFAULT_REPO_BRANCH }}"
@@ -153,7 +153,7 @@ jobs:
       if: ${{ !github.event.inputs.debug || github.event.inputs.debug == 'false' }}
       uses: podman-desktop/e2e/.github/actions/run-playwright-test@main
       with:
-        pde2e-runner-tag: ${{ env.PDE2E_RUNNER }}
+        e2e-runner-tag: ${{ env.PDE2E_RUNNER }}
         podman-path: false
         fork-repo: ${{ env.FORK }}
         branch-name: ${{ env.BRANCH }}
