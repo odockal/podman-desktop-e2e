@@ -198,6 +198,7 @@ jobs:
 
     - name: Notify Slack
       if: always()
+      continue-on-error: true
       uses: podman-desktop/e2e/.github/actions/notify-slack@main
       with:
         webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}

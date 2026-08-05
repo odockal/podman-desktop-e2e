@@ -56,4 +56,4 @@ runs:
           --arg actor "$GITHUB_ACTOR" \
           --arg run_url "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
           '{workflow_name:$workflow_name, repo:$repo, branch:$branch, status:$status, actor:$actor, run_url:$run_url}')
-        curl -sS -X POST -H 'Content-type: application/json' --data "$payload" "$SLACK_WEBHOOK_URL"
+        curl -sS --fail-with-body --connect-timeout 10 --max-time 30 -X POST -H 'Content-type: application/json' --data "$payload" "$SLACK_WEBHOOK_URL"
