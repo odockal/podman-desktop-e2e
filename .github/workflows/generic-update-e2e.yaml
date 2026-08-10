@@ -32,7 +32,7 @@ jobs:
     name: ${{ matrix.os }} generic server update e2e
     runs-on: ${{ matrix.os }}
     # disable on forks as secrets are not available
-    if: github.event.repository.fork == false
+    # if: github.event.repository.fork == false
     timeout-minutes: 60
     strategy:
       fail-fast: false
@@ -231,7 +231,7 @@ jobs:
     name: ${{ matrix.os }} generic server update e2e
     runs-on: ${{ matrix.os }}
     # disable on forks as secrets are not available
-    if: github.event.repository.fork == false
+    # if: github.event.repository.fork == false
     timeout-minutes: 60
     strategy:
       fail-fast: false
