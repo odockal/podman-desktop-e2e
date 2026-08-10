@@ -52,8 +52,11 @@ jobs:
       env:
         DEFAULT_PD_REPO_OPTIONS: 'REPO=podman-desktop,FORK=podman-desktop,BRANCH=main'
       run: |
-        echo "${{ github.event.inputs.pd_repo_options || env.DEFAULT_PD_REPO_OPTIONS }}" | awk -F ',' \
-        '{for (i=1; i<=NF; i++) {split($i, kv, "="); print "PD_"kv[1]"="kv[2]}}' >> $GITHUB_ENV
+        $options = "${{ github.event.inputs.pd_repo_options || env.DEFAULT_PD_REPO_OPTIONS }}"
+        $options -split ',' | ForEach-Object {
+            $key, $val = $_ -split '=', 2
+            "PD_${key}=${val}"
+        } | Add-Content -Path $env:GITHUB_ENV
 
     - name: Checkout podman desktop
       uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
@@ -254,11 +257,8 @@ jobs:
       env:
         DEFAULT_PD_REPO_OPTIONS: 'REPO=podman-desktop,FORK=podman-desktop,BRANCH=main'
       run: |
-        $options = "${{ github.event.inputs.pd_repo_options || env.DEFAULT_PD_REPO_OPTIONS }}"
-        $options -split ',' | ForEach-Object {
-            $key, $val = $_ -split '=', 2
-            "PD_${key}=${val}"
-        } | Add-Content -Path $env:GITHUB_ENV
+        echo "${{ github.event.inputs.pd_repo_options || env.DEFAULT_PD_REPO_OPTIONS }}" | awk -F ',' \
+        '{for (i=1; i<=NF; i++) {split($i, kv, "="); print "PD_"kv[1]"="kv[2]}}' >> $GITHUB_ENV
 
     - name: Checkout podman desktop
       uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
