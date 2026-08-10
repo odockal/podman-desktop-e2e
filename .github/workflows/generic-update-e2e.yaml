@@ -75,7 +75,7 @@ jobs:
       with:
         node-version-file: 'podman-desktop/.nvmrc'
         cache: 'pnpm'
-        cache-dependency-path: podman-desktop/package-lock.json
+        cache-dependency-path: podman-desktop/pnpm-lock.yaml
 
     - name: Execute pnpm
       working-directory: ./podman-desktop
@@ -277,7 +277,7 @@ jobs:
       with:
         node-version-file: 'podman-desktop/.nvmrc'
         cache: 'pnpm'
-        cache-dependency-path: podman-desktop/package-lock.json
+        cache-dependency-path: podman-desktop/pnpm-lock.yaml
 
     - name: Execute pnpm
       working-directory: ./podman-desktop
