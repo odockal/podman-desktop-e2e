@@ -21,18 +21,13 @@ on:
         type: string
         default: ''
         required: false
-      env_vars:
-        default: 'KEEP_VIDEOS_ON_PASS=true,KEEP_TRACES_ON_PASS=true'
-        description: 'Env. Variables used in the test host, ie: VAR1=xxx,VAR2=true,VAR3=15,VAR4="Pass me along"'
-        type: 'string'
-        required: true
 
 jobs:
   win-generic-server-update-e2e:
     name: ${{ matrix.os }} generic server update e2e
     runs-on: ${{ matrix.os }}
     # disable on forks as secrets are not available
-    # if: github.event.repository.fork == false
+    if: github.event.repository.fork == false
     timeout-minutes: 60
     strategy:
       fail-fast: false
@@ -61,7 +56,7 @@ jobs:
         '{for (i=1; i<=NF; i++) {split($i, kv, "="); print "PD_"kv[1]"="kv[2]}}' >> $GITHUB_ENV
 
     - name: Checkout podman desktop
-      uses: actions/checkout@v4
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       with:
         repository: ${{ env.PD_FORK }}/${{ env.PD_REPO }}
         ref: ${{ env.PD_BRANCH }}
@@ -231,7 +226,7 @@ jobs:
     name: ${{ matrix.os }} generic server update e2e
     runs-on: ${{ matrix.os }}
     # disable on forks as secrets are not available
-    # if: github.event.repository.fork == false
+    if: github.event.repository.fork == false
     timeout-minutes: 60
     strategy:
       fail-fast: false
@@ -245,13 +240,13 @@ jobs:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         RELEASE_VERSION_INPUT: ${{ github.event.inputs.release_version }}
       run: |
-        if ($env:RELEASE_VERSION_INPUT -ne '') {
-          $version = $env:RELEASE_VERSION_INPUT
-        } else {
-          $version = (gh release view --repo podman-desktop/podman-desktop --json tagName | ConvertFrom-Json).tagName
-        }
-        echo "RELEASE_VERSION=$version" >> $env:GITHUB_ENV
-        echo "version=$version" >> $env:GITHUB_OUTPUT
+        if [ -n "$RELEASE_VERSION_INPUT" ]; then
+          VERSION="$RELEASE_VERSION_INPUT"
+        else
+          VERSION=$(gh release view --repo podman-desktop/podman-desktop --json tagName -q .tagName)
+        fi
+        echo "RELEASE_VERSION=$VERSION" >> $GITHUB_ENV
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
 
     - name: Set the default env. variables
       env:
@@ -261,7 +256,7 @@ jobs:
         '{for (i=1; i<=NF; i++) {split($i, kv, "="); print "PD_"kv[1]"="kv[2]}}' >> $GITHUB_ENV
 
     - name: Checkout podman desktop
-      uses: actions/checkout@v4
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       with:
         repository: ${{ env.PD_FORK }}/${{ env.PD_REPO }}
         ref: ${{ env.PD_BRANCH }}
