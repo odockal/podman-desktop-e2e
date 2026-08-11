@@ -228,6 +228,7 @@ def main():
     print(f"  Found {len(prs)} PRs needing QE review")
 
     cutoff = workflow_collector._get_overnight_cutoff()
+    collection_end = datetime.now()
     print(f"🔍 Collecting workflow runs since {cutoff.strftime('%Y-%m-%d %H:%M')}...")
     workflows = workflow_collector.collect(all_repos)
     overnight = [w for w in workflows if not w.is_fallback]
@@ -254,7 +255,9 @@ def main():
         workflows=workflows,
         cves=cves,
         issues=issues,
-        summary=calculate_summary(prs, workflows, cves, issues)
+        summary=calculate_summary(prs, workflows, cves, issues),
+        overnight_cutoff=cutoff.isoformat(timespec="seconds"),
+        overnight_window_end=collection_end.isoformat(timespec="seconds")
     )
 
     # Create output directories

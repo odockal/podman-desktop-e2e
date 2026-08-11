@@ -202,7 +202,7 @@ If no data appears for certain repositories:
 ### Project Structure
 
 ```text
-qe-on-duty/
+qe-on-duty-reporter/
 ├── qe_on_duty/
 │   ├── gh_client.py           # GitHub CLI wrapper
 │   ├── config.py              # Configuration management

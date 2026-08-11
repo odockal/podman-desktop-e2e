@@ -27,7 +27,8 @@ class Config:
         # GitHub settings
         github_config = config.get('github') or {}
         self.gh_cli_path = github_config.get('cli_path') or 'gh'
-        self.max_retries = github_config.get('max_retries') or 3
+        max_retries = github_config.get('max_retries')
+        self.max_retries = max_retries if max_retries is not None else 3
 
         # Repository settings
         repo_config = config.get('repositories') or {}
@@ -110,13 +111,19 @@ class Config:
         """Get individual QE reviewer GitHub usernames."""
         return self.pr_filters.get('qe_reviewers') or []
 
+    def get_pr_max_results(self) -> int:
+        """Get the maximum number of open PRs to fetch per repo before local filtering."""
+        return self.pr_filters.get('max_results') or 500
+
     def get_workflow_max_age_days(self) -> int:
         """Get maximum age for workflow runs in days."""
-        return self.workflow_filters.get('max_age_days') or 7
+        max_age_days = self.workflow_filters.get('max_age_days')
+        return max_age_days if max_age_days is not None else 7
 
     def get_workflow_overnight_start_hour(self) -> int:
         """Get the start hour for the overnight window (yesterday at this hour)."""
-        return self.workflow_filters.get('overnight_start_hour') or 18
+        overnight_start_hour = self.workflow_filters.get('overnight_start_hour')
+        return overnight_start_hour if overnight_start_hour is not None else 18
 
     def get_workflow_default_name_pattern(self) -> str:
         """Get the default substring pattern for matching workflow names."""
@@ -148,4 +155,9 @@ class Config:
 
     def get_issue_max_age_days(self) -> int:
         """Get maximum age for issues in days."""
-        return self.issue_filters.get('max_age_days') or 30
+        max_age_days = self.issue_filters.get('max_age_days')
+        return max_age_days if max_age_days is not None else 30
+
+    def get_issue_max_results(self) -> int:
+        """Get the maximum number of issues to fetch per repo before local filtering."""
+        return self.issue_filters.get('max_results') or 500

@@ -73,14 +73,19 @@ class WeeklyReporter:
             return ""
 
         # Calculate averages
-        summaries = [s.summary for s in self.snapshots if s.summary]
-        if not summaries:
+        snapshots_with_summary = [s for s in self.snapshots if s.summary]
+        if not snapshots_with_summary:
             return "## Weekly Highlights\n\n*No summary data available.*"
+
+        summaries = [s.summary for s in snapshots_with_summary]
 
         avg_prs = sum(s.total_prs_needing_qe for s in summaries) / len(summaries)
         total_workflows = sum(s.total_workflow_runs for s in summaries)
-        total_failed = sum(s.failed_workflow_runs for s in summaries)
-        success_rate = ((total_workflows - total_failed) / total_workflows * 100) if total_workflows > 0 else 0
+        total_success = sum(
+            1 for s in snapshots_with_summary for wf in s.workflows
+            if not wf.is_fallback and wf.conclusion == 'success'
+        )
+        success_rate = (total_success / total_workflows * 100) if total_workflows > 0 else 0
 
         total_critical_cves = sum(s.critical_cves for s in summaries)
         total_high_cves = sum(s.high_cves for s in summaries)

@@ -2,7 +2,7 @@
 
 from typing import List, Dict
 from collections import defaultdict
-from datetime import datetime, timedelta
+from datetime import datetime
 from qe_on_duty.models.snapshot import DailySnapshot, WorkflowData
 from qe_on_duty.config import Config
 
@@ -119,11 +119,14 @@ class DailyReporter:
         return "\n\n".join(sections)
 
     def _get_overnight_window_str(self) -> str:
-        """Format the overnight window for display."""
-        start_hour = self.config.get_workflow_overnight_start_hour()
-        now = datetime.now()
-        cutoff = (now - timedelta(days=1)).replace(hour=start_hour, minute=0, second=0, microsecond=0)
-        return f"{cutoff.strftime('%Y-%m-%d %H:%M')} — {now.strftime('%Y-%m-%d %H:%M')}"
+        """Format the overnight window actually used to collect this snapshot's workflows."""
+        cutoff = self.snapshot.overnight_cutoff
+        window_end = self.snapshot.overnight_window_end
+        if not cutoff or not window_end:
+            return "unknown (older snapshot, window not recorded)"
+        cutoff_str = datetime.fromisoformat(cutoff).strftime('%Y-%m-%d %H:%M')
+        end_str = datetime.fromisoformat(window_end).strftime('%Y-%m-%d %H:%M')
+        return f"{cutoff_str} — {end_str}"
 
     def _generate_workflow_section(self) -> str:
         """Generate CI/CD workflow section (failed overnight + fallback latest)."""
@@ -274,7 +277,7 @@ class DailyReporter:
 
         # Workflow filters
         lines.append("\n### Workflow Filters\n")
-        lines.append(f"- **Overnight window**: yesterday {self.config.get_workflow_overnight_start_hour()}:00 — now")
+        lines.append(f"- **Overnight window**: {self._get_overnight_window_str()}")
         lines.append(f"- **Include pattern**: workflows matching `{self.config.get_workflow_default_name_pattern()}` (case-insensitive)")
 
         exclusions = self.config.get_workflow_exclusions()

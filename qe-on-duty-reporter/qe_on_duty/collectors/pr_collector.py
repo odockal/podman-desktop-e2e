@@ -27,6 +27,7 @@ class PRCollector:
         if current_user:
             self.qe_reviewers.add(current_user)
         self.current_user = current_user
+        self.max_results = config.get_pr_max_results()
 
     def collect(self, repositories: List[str]) -> List[PRData]:
         """
@@ -58,8 +59,8 @@ class PRCollector:
         Returns:
             List of PRData objects
         """
-        # Get all open PRs
-        prs = self.gh_client.pr_list(repo, state="open")
+        # Get all open PRs (up to the configured cap, before local QE filtering)
+        prs = self.gh_client.pr_list(repo, state="open", limit=self.max_results)
 
         # Filter PRs matching QE criteria
         qe_prs = []

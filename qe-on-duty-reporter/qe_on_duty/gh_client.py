@@ -22,11 +22,16 @@ class GHClient:
 
     def _verify_gh_auth(self):
         """Verify gh CLI is authenticated."""
-        result = subprocess.run(
-            [self.gh_path, "auth", "status"],
-            capture_output=True,
-            text=True
-        )
+        try:
+            result = subprocess.run(
+                [self.gh_path, "auth", "status"],
+                capture_output=True,
+                text=True,
+                timeout=30
+            )
+        except subprocess.TimeoutExpired:
+            raise RuntimeError("gh auth status timed out after 30s")
+
         if result.returncode != 0:
             raise RuntimeError(
                 "gh CLI not authenticated. Run: gh auth login\n"
@@ -194,14 +199,24 @@ class GHClient:
 
         return self.run_command(args)
 
-    def api(self, endpoint: str) -> Any:
+    def api(self, endpoint: str, paginate: bool = False) -> Any:
         """
         Execute raw GitHub API request using gh api.
 
         Args:
             endpoint: API endpoint (e.g., /repos/owner/repo/dependabot/alerts)
+            paginate: If True, fetch all pages and return them as a list of
+                per-page results (each page's JSON body as one list element).
+                GitHub's REST list endpoints default to a small page size, so
+                this is required to get complete results for repos with many
+                items (e.g. 100+ Dependabot alerts).
 
         Returns:
-            Parsed JSON response
+            Parsed JSON response. When paginate=True on success, a list of
+            pages (each page itself a list); on handled errors (no access,
+            disabled, etc.) a flat empty list is returned instead.
         """
-        return self.run_command(["api", endpoint])
+        args = ["api", endpoint]
+        if paginate:
+            args.extend(["--paginate", "--slurp"])
+        return self.run_command(args)

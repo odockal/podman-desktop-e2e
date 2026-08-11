@@ -54,9 +54,17 @@ class CVECollector:
         Returns:
             List of CVEData objects
         """
-        # Use gh api to get Dependabot alerts
+        # Use gh api to get Dependabot alerts (paginated - repos can have 100+ alerts)
         endpoint = f"/repos/{repo}/dependabot/alerts"
-        alerts = self.gh_client.api(endpoint)
+        pages = self.gh_client.api(endpoint, paginate=True)
+
+        # On success, --paginate --slurp wraps each page's alerts in an outer
+        # list; on handled errors (no access, disabled, etc.) a flat empty
+        # list is returned instead. Merge all pages into one alert list.
+        if pages and isinstance(pages[0], list):
+            alerts = [alert for page in pages for alert in page]
+        else:
+            alerts = pages or []
 
         # gh api returns empty list if no access or no alerts
         if not alerts:

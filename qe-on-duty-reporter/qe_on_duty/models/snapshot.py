@@ -95,6 +95,8 @@ class DailySnapshot:
     cves: List[CVEData] = field(default_factory=list)
     issues: List[IssueData] = field(default_factory=list)
     summary: SummaryData = None
+    overnight_cutoff: str = ''  # ISO timestamp: start of the overnight window used to collect workflows
+    overnight_window_end: str = ''  # ISO timestamp: end of the overnight window (collection time)
 
     def to_json(self) -> str:
         """Serialize to JSON string."""

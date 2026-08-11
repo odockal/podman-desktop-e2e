@@ -24,6 +24,7 @@ class IssueCollector:
         self.labels = config.get_issue_labels()
         self.states = config.get_issue_states()
         self.max_age_days = config.get_issue_max_age_days()
+        self.max_results = config.get_issue_max_results()
 
     def collect(self, repositories: List[str]) -> List[IssueData]:
         """
@@ -55,12 +56,12 @@ class IssueCollector:
         Returns:
             List of IssueData objects
         """
-        # Get issues with specified labels and state
+        # Get issues with specified labels and state (up to the configured cap)
         issues = self.gh_client.issue_list(
             repo,
             labels=self.labels,
             state=self.states[0] if self.states else "open",
-            limit=100
+            limit=self.max_results
         )
 
         # Filter by age if needed
