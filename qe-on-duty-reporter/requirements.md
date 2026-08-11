@@ -2,7 +2,7 @@
 
 Why? Having a rotating schedule for these responsibilities ensures a balanced distribution of tasks among the QE team, promoting skill development, team collaboration and team member exposure to a broader engineering team.
 
-### Possible actions to take
+## Possible actions to take
 * Monitor PRs incoming and outstanding that could require our review
 * Verification of the PRs
 * Look for changes that could break tests, can apply qe/review label
@@ -13,7 +13,7 @@ Why? Having a rotating schedule for these responsibilities ensures a balanced di
 * Verification of the patches
 * Filling issues for extending tests related to changes in application, for example these with qe/review label
 
-### Podman Desktop QE Infrastructure Stability:
+## Podman Desktop QE Infrastructure Stability:
 Monitor test results and maintain CI/CD systems and infrastructure
 
 Main repositories to look at for the GH actions workflow run results
@@ -21,7 +21,7 @@ Main repositories to look at for the GH actions workflow run results
 * https://github.com/podman-desktop/e2e
 
 Gathering the test results from the extensions GH Actions CI:
-* go thourgh the list of extensions on domains.json file: https://github.com/containers/podman-desktop-internal/blob/main/domains.json 
+* go through the list of extensions on domains.json file: https://github.com/containers/podman-desktop-internal/blob/main/domains.json 
 
 Github available and required items for the summary:
 

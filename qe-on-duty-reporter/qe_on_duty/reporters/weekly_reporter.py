@@ -2,6 +2,7 @@
 
 from typing import List, Dict
 from collections import defaultdict, Counter
+from datetime import datetime
 from qe_on_duty.models.snapshot import DailySnapshot
 from qe_on_duty.config import Config
 
@@ -59,9 +60,9 @@ class WeeklyReporter:
 
         start_date = self.snapshots[0].date
         end_date = self.snapshots[-1].date
-        week_num = self.snapshots[-1].timestamp[:4] + "-week-" + str(int(self.snapshots[-1].timestamp[5:7]) // 7 * 4 + int(self.snapshots[-1].timestamp[8:10]) // 7)
+        iso_year, week_num, _ = datetime.strptime(end_date, '%Y-%m-%d').isocalendar()
 
-        return f"""# QE On-Duty Weekly Summary - Week {week_num}
+        return f"""# QE On-Duty Weekly Summary - Week {iso_year}-week-{week_num:02d}
 
 **Period**: {start_date} to {end_date}
 **Snapshots**: {len(self.snapshots)} days"""
@@ -72,21 +73,25 @@ class WeeklyReporter:
             return ""
 
         # Calculate averages
-        avg_prs = sum(s.summary.total_prs_needing_qe for s in self.snapshots if s.summary) / len(self.snapshots)
-        total_workflows = sum(s.summary.total_workflow_runs for s in self.snapshots if s.summary)
-        total_failed = sum(s.summary.failed_workflow_runs for s in self.snapshots if s.summary)
+        summaries = [s.summary for s in self.snapshots if s.summary]
+        if not summaries:
+            return "## Weekly Highlights\n\n*No summary data available.*"
+
+        avg_prs = sum(s.total_prs_needing_qe for s in summaries) / len(summaries)
+        total_workflows = sum(s.total_workflow_runs for s in summaries)
+        total_failed = sum(s.failed_workflow_runs for s in summaries)
         success_rate = ((total_workflows - total_failed) / total_workflows * 100) if total_workflows > 0 else 0
 
-        total_critical_cves = sum(s.summary.critical_cves for s in self.snapshots if s.summary)
-        total_high_cves = sum(s.summary.high_cves for s in self.snapshots if s.summary)
-        total_bugs = sum(s.summary.total_open_bugs for s in self.snapshots if s.summary)
+        total_critical_cves = sum(s.critical_cves for s in summaries)
+        total_high_cves = sum(s.high_cves for s in summaries)
+        total_bugs = sum(s.total_open_bugs for s in summaries)
 
         return f"""## Weekly Highlights
 
 - 📊 **Average PRs/day needing QE**: {avg_prs:.1f}
 - ✅ **Overall Workflow Success Rate**: {success_rate:.1f}%
 - 🔒 **CVEs**: {total_critical_cves} Critical, {total_high_cves} High
-- 🐛 **Average Open Bugs**: {total_bugs / len(self.snapshots):.0f}"""
+- 🐛 **Average Open Bugs**: {total_bugs / len(summaries):.0f}"""
 
     def _generate_active_repos(self) -> str:
         """Generate most active repositories section."""
@@ -97,7 +102,8 @@ class WeeklyReporter:
             for pr in snapshot.prs:
                 pr_counts[pr.repository] += 1
             for wf in snapshot.workflows:
-                workflow_counts[wf.repository] += 1
+                if not wf.is_fallback:
+                    workflow_counts[wf.repository] += 1
 
         if not pr_counts and not workflow_counts:
             return ""
@@ -128,6 +134,8 @@ class WeeklyReporter:
 
         for snapshot in self.snapshots:
             for wf in snapshot.workflows:
+                if wf.is_fallback:
+                    continue
                 key = f"{wf.repository} → {wf.workflow_name}"
                 workflow_failures[key]['total'] += 1
                 if wf.conclusion == 'failure':
@@ -155,23 +163,25 @@ class WeeklyReporter:
         if not self.snapshots:
             return ""
 
-        # Count CVEs by severity across all snapshots
-        cve_by_severity = defaultdict(set)
+        # Track the latest severity per unique alert (repository, alert_number) across all snapshots
+        alert_severity = {}
 
         for snapshot in self.snapshots:
             for cve in snapshot.cves:
-                cve_key = f"{cve.repository}:{cve.cve_id}"
-                cve_by_severity[cve.severity].add(cve_key)
+                alert_key = (cve.repository, cve.alert_number)
+                alert_severity[alert_key] = cve.severity
 
-        if not any(cve_by_severity.values()):
+        if not alert_severity:
             return "## CVE Summary\n\n*No CVEs found this week.*"
+
+        severity_counts = Counter(alert_severity.values())
 
         return f"""## CVE Summary
 
-- ❌ **Critical**: {len(cve_by_severity['critical'])} unique alerts
-- ⚠️  **High**: {len(cve_by_severity['high'])} unique alerts
-- ℹ️  **Medium**: {len(cve_by_severity['medium'])} unique alerts
-- ℹ️  **Low**: {len(cve_by_severity['low'])} unique alerts"""
+- ❌ **Critical**: {severity_counts['critical']} unique alerts
+- ⚠️  **High**: {severity_counts['high']} unique alerts
+- ℹ️  **Medium**: {severity_counts['medium']} unique alerts
+- ℹ️  **Low**: {severity_counts['low']} unique alerts"""
 
     def _generate_daily_links(self) -> str:
         """Generate links to daily reports."""
@@ -181,7 +191,11 @@ class WeeklyReporter:
         sections = ["## Daily Reports\n"]
 
         for snapshot in self.snapshots:
-            sections.append(f"- [{snapshot.date} {snapshot.time}](../daily/{snapshot.date}/{snapshot.time}.md)")
+            filename_time = snapshot.time.replace(":", "")
+            sections.append(
+                f"- [{snapshot.date} {snapshot.time}]"
+                f"(../daily/{snapshot.date}/{filename_time}.md)"
+            )
 
         return "\n".join(sections)
 

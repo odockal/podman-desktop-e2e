@@ -19,8 +19,10 @@ pr_filters:
   labels:
     - "qe/testing-required"
     - "qe/review"
+    - "domain/qe/inreview"
+    - "domain/qe"
   assignee_teams:
-    - "qe-reviewers"
+    - "podman-desktop/qe-reviewers"
   qe_reviewers:
     - "odockal"
     # Add more QE team GitHub usernames here

@@ -1,7 +1,7 @@
 """Collector for issues and bug reports."""
 
 from typing import List
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from dateutil import parser as date_parser
 from qe_on_duty.gh_client import GHClient
 from qe_on_duty.config import Config
@@ -65,20 +65,15 @@ class IssueCollector:
 
         # Filter by age if needed
         if self.max_age_days > 0:
-            cutoff_date = datetime.now() - timedelta(days=self.max_age_days)
+            cutoff_date = datetime.now(timezone.utc) - timedelta(days=self.max_age_days)
             filtered_issues = []
             for issue in issues:
-                # Filter out pull requests (GitHub API returns PRs as issues)
-                if 'pull_request' in issue:
-                    continue
-
                 created_at = date_parser.parse(issue['createdAt'])
-                if created_at.replace(tzinfo=None) >= cutoff_date:
+                if created_at >= cutoff_date:
                     filtered_issues.append(self._parse_issue(issue, repo))
             return filtered_issues
         else:
-            # Return all issues (still filter out PRs)
-            return [self._parse_issue(issue, repo) for issue in issues if 'pull_request' not in issue]
+            return [self._parse_issue(issue, repo) for issue in issues]
 
     def _parse_issue(self, issue: dict, repo: str) -> IssueData:
         """

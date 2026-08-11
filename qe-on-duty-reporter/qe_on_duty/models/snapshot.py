@@ -20,6 +20,7 @@ class PRData:
     updated_at: str
     state: str
     draft: bool
+    requested_reviewers: List[str] = field(default_factory=list)
 
 
 @dataclass
@@ -110,10 +111,10 @@ class DailySnapshot:
         with open(filepath, 'r') as f:
             data = json.load(f)
             # Convert nested dicts back to dataclasses
-            data['prs'] = [PRData(**pr) for pr in data.get('prs', [])]
-            data['workflows'] = [WorkflowData(**wf) for wf in data.get('workflows', [])]
-            data['cves'] = [CVEData(**cve) for cve in data.get('cves', [])]
-            data['issues'] = [IssueData(**issue) for issue in data.get('issues', [])]
+            data['prs'] = [PRData(**pr) for pr in data.get('prs') or []]
+            data['workflows'] = [WorkflowData(**wf) for wf in data.get('workflows') or []]
+            data['cves'] = [CVEData(**cve) for cve in data.get('cves') or []]
+            data['issues'] = [IssueData(**issue) for issue in data.get('issues') or []]
             if data.get('summary'):
                 data['summary'] = SummaryData(**data['summary'])
             return cls(**data)

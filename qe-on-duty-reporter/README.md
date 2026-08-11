@@ -49,7 +49,7 @@ Your GitHub account needs:
 
 1. **Clone or navigate to the repository**
    ```bash
-   cd /home/odockal/git/github-apps/qe-on-duty
+   cd qe-on-duty-reporter
    ```
 
 2. **Install Python dependencies**
@@ -113,7 +113,7 @@ python main.py --output-dir /tmp/qe-reports
 
 ## Output Structure
 
-```
+```text
 output/
 ├── snapshots/
 │   └── 2026-04-21/
@@ -201,7 +201,7 @@ If no data appears for certain repositories:
 
 ### Project Structure
 
-```
+```text
 qe-on-duty/
 ├── qe_on_duty/
 │   ├── gh_client.py           # GitHub CLI wrapper

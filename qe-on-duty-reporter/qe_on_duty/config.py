@@ -22,31 +22,31 @@ class Config:
     def _load_config(self):
         """Load and parse configuration file."""
         with open(self.config_path, 'r') as f:
-            config = yaml.safe_load(f)
+            config = yaml.safe_load(f) or {}
 
         # GitHub settings
-        github_config = config.get('github', {})
-        self.gh_cli_path = github_config.get('cli_path', 'gh')
-        self.max_retries = github_config.get('max_retries', 3)
+        github_config = config.get('github') or {}
+        self.gh_cli_path = github_config.get('cli_path') or 'gh'
+        self.max_retries = github_config.get('max_retries') or 3
 
         # Repository settings
-        repo_config = config.get('repositories', {})
-        self.core_repositories = repo_config.get('core', [])
-        self.custom_repositories = repo_config.get('custom', [])
-        self.domains_json_path = repo_config.get('domains_json', '')
-        self.domains_user_name = repo_config.get('domains_user_name', '')
+        repo_config = config.get('repositories') or {}
+        self.core_repositories = repo_config.get('core') or []
+        self.custom_repositories = repo_config.get('custom') or []
+        self.domains_json_path = repo_config.get('domains_json') or ''
+        self.domains_user_name = repo_config.get('domains_user_name') or ''
 
         # Output settings
-        output_config = config.get('output', {})
-        self.output_base_dir = output_config.get('base_dir', 'output')
+        output_config = config.get('output') or {}
+        self.output_base_dir = output_config.get('base_dir') or 'output'
         self.snapshots_dir = os.path.join(self.output_base_dir, 'snapshots')
         self.reports_dir = os.path.join(self.output_base_dir, 'reports')
 
         # Filter settings
-        self.pr_filters = config.get('pr_filters', {})
-        self.workflow_filters = config.get('workflow_filters', {})
-        self.cve_filters = config.get('cve_filters', {})
-        self.issue_filters = config.get('issue_filters', {})
+        self.pr_filters = config.get('pr_filters') or {}
+        self.workflow_filters = config.get('workflow_filters') or {}
+        self.cve_filters = config.get('cve_filters') or {}
+        self.issue_filters = config.get('issue_filters') or {}
 
     def get_all_repositories(self) -> List[str]:
         """
@@ -100,52 +100,52 @@ class Config:
 
     def get_pr_labels(self) -> List[str]:
         """Get PR filter labels."""
-        return self.pr_filters.get('labels', [])
+        return self.pr_filters.get('labels') or []
 
     def get_pr_assignee_teams(self) -> List[str]:
         """Get PR assignee teams."""
-        return self.pr_filters.get('assignee_teams', [])
+        return self.pr_filters.get('assignee_teams') or []
 
     def get_qe_reviewers(self) -> List[str]:
         """Get individual QE reviewer GitHub usernames."""
-        return self.pr_filters.get('qe_reviewers', [])
+        return self.pr_filters.get('qe_reviewers') or []
 
     def get_workflow_max_age_days(self) -> int:
         """Get maximum age for workflow runs in days."""
-        return self.workflow_filters.get('max_age_days', 7)
+        return self.workflow_filters.get('max_age_days') or 7
 
     def get_workflow_overnight_start_hour(self) -> int:
         """Get the start hour for the overnight window (yesterday at this hour)."""
-        return self.workflow_filters.get('overnight_start_hour', 18)
+        return self.workflow_filters.get('overnight_start_hour') or 18
 
     def get_workflow_default_name_pattern(self) -> str:
         """Get the default substring pattern for matching workflow names."""
-        return self.workflow_filters.get('default_name_pattern', 'e2e')
+        return self.workflow_filters.get('default_name_pattern') or 'e2e'
 
     def get_workflow_repo_overrides(self) -> Dict[str, List[str]]:
         """Get per-repo workflow name overrides."""
-        return self.workflow_filters.get('repo_workflows', {}) or {}
+        return self.workflow_filters.get('repo_workflows') or {}
 
     def get_workflow_exclusions(self) -> List[str]:
         """Get workflow names to always exclude (case-insensitive substring match)."""
-        return self.workflow_filters.get('exclude_workflows', [])
+        return self.workflow_filters.get('exclude_workflows') or []
 
     def get_cve_states(self) -> List[str]:
         """Get CVE filter states."""
-        return self.cve_filters.get('states', ['open'])
+        return self.cve_filters.get('states') or ['open']
 
     def get_cve_severities(self) -> List[str]:
         """Get CVE filter severities."""
-        return self.cve_filters.get('severities', ['critical', 'high', 'medium', 'low'])
+        return self.cve_filters.get('severities') or ['critical', 'high', 'medium', 'low']
 
     def get_issue_labels(self) -> List[str]:
         """Get issue filter labels."""
-        return self.issue_filters.get('labels', ['kind/bug'])
+        return self.issue_filters.get('labels') or ['kind/bug']
 
     def get_issue_states(self) -> List[str]:
         """Get issue filter states."""
-        return self.issue_filters.get('states', ['open'])
+        return self.issue_filters.get('states') or ['open']
 
     def get_issue_max_age_days(self) -> int:
         """Get maximum age for issues in days."""
-        return self.issue_filters.get('max_age_days', 30)
+        return self.issue_filters.get('max_age_days') or 30

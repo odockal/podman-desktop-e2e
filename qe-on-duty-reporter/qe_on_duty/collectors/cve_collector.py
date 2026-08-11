@@ -70,7 +70,7 @@ class CVECollector:
                 continue
 
             # Filter by severity
-            severity = alert.get('security_advisory', {}).get('severity', 'unknown')
+            severity = (alert.get('security_advisory') or {}).get('severity', 'unknown')
             if severity not in self.allowed_severities:
                 continue
 
@@ -89,9 +89,10 @@ class CVECollector:
         Returns:
             CVEData object
         """
-        security_advisory = alert.get('security_advisory', {})
-        vulnerability = alert.get('security_vulnerability', {})
-        package = vulnerability.get('package', {})
+        security_advisory = alert.get('security_advisory') or {}
+        vulnerability = alert.get('security_vulnerability') or {}
+        package = vulnerability.get('package') or {}
+        first_patched_version = vulnerability.get('first_patched_version') or {}
 
         return CVEData(
             repository=repo,
@@ -101,7 +102,7 @@ class CVECollector:
             cve_id=security_advisory.get('cve_id', security_advisory.get('ghsa_id', 'unknown')),
             package_name=package.get('name', 'unknown'),
             vulnerable_version=vulnerability.get('vulnerable_version_range', 'unknown'),
-            patched_version=vulnerability.get('first_patched_version', {}).get('identifier', 'none'),
+            patched_version=first_patched_version.get('identifier', 'none'),
             url=alert.get('html_url', ''),
             created_at=alert.get('created_at', ''),
             updated_at=alert.get('updated_at', '')

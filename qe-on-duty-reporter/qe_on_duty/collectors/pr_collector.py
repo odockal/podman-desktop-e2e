@@ -73,8 +73,9 @@ class PRCollector:
         """
         Check if PR matches QE review criteria.
 
-        A PR matches if it has a QE label, a QE team assignee,
-        or is assigned to any known QE reviewer or the current user.
+        A PR matches if it has a QE label, has a QE team requested as reviewer,
+        or is assigned/requested for review by any known QE reviewer or the
+        current user.
 
         Args:
             pr: PR data dictionary from gh CLI
@@ -86,10 +87,36 @@ class PRCollector:
         has_qe_label = any(label in self.qe_labels for label in pr_labels)
 
         assignees = [assignee['login'] for assignee in pr.get('assignees', [])]
-        has_qe_team = any(team in assignees for team in self.qe_teams)
-        has_qe_reviewer = any(a in self.qe_reviewers for a in assignees)
+        requested_users, requested_teams = self._parse_review_requests(pr)
+
+        has_qe_team = any(team in requested_teams for team in self.qe_teams)
+        has_qe_reviewer = any(a in self.qe_reviewers for a in assignees) or \
+            any(u in self.qe_reviewers for u in requested_users)
 
         return has_qe_label or has_qe_team or has_qe_reviewer
+
+    def _parse_review_requests(self, pr: dict) -> tuple:
+        """
+        Split a PR's requested reviewers into individual users and teams.
+
+        GitHub reports requested reviewers as a mix of User and Team objects;
+        assignees cannot hold teams, so team-based requests only ever show up
+        here (e.g. requesting the "qe-reviewers" team).
+
+        Args:
+            pr: PR data dictionary from gh CLI
+
+        Returns:
+            Tuple of (list of user logins, list of team names)
+        """
+        users = []
+        teams = []
+        for reviewer in pr.get('reviewRequests', []) or []:
+            if reviewer.get('__typename') == 'Team':
+                teams.append(reviewer.get('name', ''))
+            else:
+                users.append(reviewer.get('login', ''))
+        return users, teams
 
     def _parse_pr(self, pr: dict, repo: str) -> PRData:
         """
@@ -102,6 +129,8 @@ class PRCollector:
         Returns:
             PRData object
         """
+        requested_users, requested_teams = self._parse_review_requests(pr)
+
         return PRData(
             repository=repo,
             number=pr['number'],
@@ -113,5 +142,6 @@ class PRCollector:
             created_at=pr['createdAt'],
             updated_at=pr['updatedAt'],
             state=pr['state'],
-            draft=pr.get('isDraft', False)
+            draft=pr.get('isDraft', False),
+            requested_reviewers=requested_users + [f"team:{t}" for t in requested_teams]
         )

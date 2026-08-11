@@ -103,11 +103,16 @@ class DailyReporter:
                 draft_marker = " 🚧 (Draft)" if pr.draft else ""
                 labels = ", ".join(f"`{label}`" for label in pr.labels if label in self.config.get_pr_labels())
                 assignees_str = ", ".join(f"@{a}" for a in pr.assignees) if pr.assignees else "none"
+                reviewers_str = ", ".join(
+                    f"team:@{r[5:]}" if r.startswith("team:") else f"@{r}"
+                    for r in pr.requested_reviewers
+                ) if pr.requested_reviewers else "none"
                 sections.append(
                     f"- 🔍 **[#{pr.number}]({pr.url})** {pr.title}{draft_marker}\n"
                     f"  - Labels: {labels if labels else 'none'}\n"
                     f"  - Author: @{pr.author}\n"
                     f"  - Assignees: {assignees_str}\n"
+                    f"  - Requested reviewers: {reviewers_str}\n"
                     f"  - Updated: {pr.updated_at}"
                 )
 
@@ -247,7 +252,7 @@ class DailyReporter:
         categorized = self.config.get_categorized_repositories()
         all_repos = self.config.get_all_repositories()
 
-        lines = [f"## Report Configuration\n"]
+        lines = ["## Report Configuration\n"]
 
         # Repository coverage
         lines.append(f"### Repositories ({len(all_repos)} total)\n")
@@ -268,7 +273,7 @@ class DailyReporter:
                 lines.append(f"- {repo}")
 
         # Workflow filters
-        lines.append(f"\n### Workflow Filters\n")
+        lines.append("\n### Workflow Filters\n")
         lines.append(f"- **Overnight window**: yesterday {self.config.get_workflow_overnight_start_hour()}:00 — now")
         lines.append(f"- **Include pattern**: workflows matching `{self.config.get_workflow_default_name_pattern()}` (case-insensitive)")
 
@@ -278,7 +283,7 @@ class DailyReporter:
 
         overrides = self.config.get_workflow_repo_overrides()
         if overrides:
-            lines.append(f"\n**Additional per-repo workflows** (on top of default pattern):")
+            lines.append("\n**Additional per-repo workflows** (on top of default pattern):")
             for repo, workflows in sorted(overrides.items()):
                 lines.append(f"- `{repo}`: {', '.join(f'`{w}`' for w in workflows)}")
 

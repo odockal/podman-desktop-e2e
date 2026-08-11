@@ -74,7 +74,12 @@ class GHClient:
                 return []
 
             # Dependabot alerts not available - return empty list (not an error)
-            if "dependabot" in stderr_lower and ("forbidden" in stderr_lower or "404" in stderr_lower):
+            if "dependabot" in stderr_lower and (
+                "forbidden" in stderr_lower
+                or "404" in stderr_lower
+                or "403" in stderr_lower
+                or "disabled" in stderr_lower
+            ):
                 return []
 
             # No workflow runs - return empty list (valid state)
@@ -133,7 +138,7 @@ class GHClient:
             "--repo", repo,
             "--state", state,
             "--limit", str(limit),
-            "--json", "number,title,url,author,labels,assignees,createdAt,updatedAt,state,isDraft"
+            "--json", "number,title,url,author,labels,assignees,reviewRequests,createdAt,updatedAt,state,isDraft"
         ])
 
     def run_list(self, repo: str, limit: int = 100, status: Optional[str] = None,

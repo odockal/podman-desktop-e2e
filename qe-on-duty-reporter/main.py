@@ -141,7 +141,45 @@ def main():
     now = datetime.now()
     report_date = args.date if args.date else now.strftime('%Y-%m-%d')
     report_time = args.time if args.time else now.strftime('%H%M')
-    timestamp = f"{report_date}T{report_time[:2]}:{report_time[2:]}:00Z"
+    try:
+        if len(report_date) != 10 or len(report_time) != 4:
+            raise ValueError
+        report_datetime = datetime.strptime(
+            f"{report_date} {report_time}",
+            "%Y-%m-%d %H%M",
+        )
+    except ValueError:
+        parser.error("--date must be YYYY-MM-DD and --time must be HHMM")
+
+    timestamp = report_datetime.isoformat(timespec="seconds")
+
+    if args.weekly:
+        # Generate weekly report from existing snapshots
+        from datetime import timedelta
+        end = datetime.strptime(report_date, '%Y-%m-%d')
+        start = end - timedelta(days=6)  # Last 7 days including today
+
+        print(f"📅 Loading snapshots from {start.strftime('%Y-%m-%d')} to {end.strftime('%Y-%m-%d')}...")
+        snapshots = load_daily_snapshots(config.output_base_dir, start, end)
+
+        if not snapshots:
+            print("❌ No snapshots found for the specified period")
+            sys.exit(1)
+
+        print(f"📄 Generating weekly report from {len(snapshots)} snapshots...")
+        weekly_reporter = WeeklyReporter(snapshots, config)
+        report = weekly_reporter.generate()
+
+        # Determine ISO year/week number
+        iso_year, week_num, _ = end.isocalendar()
+        report_path = os.path.join(config.reports_dir, 'weekly', f"{iso_year}-week-{week_num:02d}.md")
+
+        os.makedirs(os.path.dirname(report_path), exist_ok=True)
+        with open(report_path, 'w') as f:
+            f.write(report)
+
+        print(f"📄 Weekly report saved: {report_path}")
+        sys.exit(0)
 
     # Initialize GitHub CLI client
     try:
@@ -176,34 +214,6 @@ def main():
         for repo in categorized['custom']:
             print(f"    - {repo}")
     print()
-
-    if args.weekly:
-        # Generate weekly report from existing snapshots
-        from datetime import timedelta
-        end = datetime.strptime(report_date, '%Y-%m-%d')
-        start = end - timedelta(days=6)  # Last 7 days including today
-
-        print(f"📅 Loading snapshots from {start.strftime('%Y-%m-%d')} to {end.strftime('%Y-%m-%d')}...")
-        snapshots = load_daily_snapshots(config.output_base_dir, start, end)
-
-        if not snapshots:
-            print("❌ No snapshots found for the specified period")
-            sys.exit(1)
-
-        print(f"📄 Generating weekly report from {len(snapshots)} snapshots...")
-        weekly_reporter = WeeklyReporter(snapshots, config)
-        report = weekly_reporter.generate()
-
-        # Determine week number
-        week_num = end.isocalendar()[1]
-        report_path = os.path.join(config.reports_dir, 'weekly', f"{end.year}-week-{week_num:02d}.md")
-
-        os.makedirs(os.path.dirname(report_path), exist_ok=True)
-        with open(report_path, 'w') as f:
-            f.write(report)
-
-        print(f"📄 Weekly report saved: {report_path}")
-        sys.exit(0)
 
     # Daily report - collect fresh data
     # Initialize collectors
@@ -260,8 +270,8 @@ def main():
 
     # Create/update latest.json symlink
     latest_link = os.path.join(day_snapshot_dir, 'latest.json')
-    if os.path.exists(latest_link):
-        os.remove(latest_link)
+    if os.path.lexists(latest_link):
+        os.unlink(latest_link)
     os.symlink(f"{report_time}.json", latest_link)
     print(f"🔗 Latest symlink updated: {latest_link}")
 

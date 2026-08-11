@@ -44,9 +44,9 @@ class RepositoryParser:
                 if repo_name:
                     repositories.append(Repository(
                         name=repo_name,
-                        domain=entry.get('domain', ''),
-                        owners=entry.get('owners', []),
-                        qe_owners=entry.get('qe_owners', [])
+                        domain=entry.get('domain') or '',
+                        owners=entry.get('owners') or [],
+                        qe_owners=entry.get('qe_owners') or []
                     ))
 
         return repositories
@@ -69,13 +69,16 @@ class RepositoryParser:
         # https://github.com/owner/repo.git
         # git@github.com:owner/repo.git
         patterns = [
-            r'https://github\.com/([^/]+/[^/\.]+)',
-            r'git@github\.com:([^/]+/[^/\.]+)',
+            r'https://github\.com/([^/?#\s]+/[^/?#\s]+)',
+            r'git@github\.com:([^/?#\s]+/[^/?#\s]+)',
         ]
 
         for pattern in patterns:
             match = re.match(pattern, url)
             if match:
-                return match.group(1)
+                repo = match.group(1)
+                if repo.endswith('.git'):
+                    repo = repo[:-4]
+                return repo
 
         return None
