@@ -152,16 +152,11 @@ jobs:
     - name: Emulate X session
       uses: podman-desktop/e2e/.github/actions/emulate-x-session@main
 
-    - name: Download Podman nightly, do not initialize
-      uses: podman-desktop/e2e/.github/actions/download-podman-nightly@main
-      with:
-        podman-image-tag: v0.0.3
-        podman-download-url: ${{ env.PODMAN_URL }}
-
     - name: Run Podman Desktop Playwright E2E tests
       uses: podman-desktop/e2e/.github/actions/run-playwright-test@main
       with:
         e2e-runner-tag: ${{ env.E2E_RUNNER_VERSION }}
+        podman-download-url: ${{ env.PODMAN_URL }}
         podman-desktop-url: ${{ env.PD_URL }}
         fork-repo: ${{ env.PD_FORK }}
         branch-name: ${{ env.PD_BRANCH }}
