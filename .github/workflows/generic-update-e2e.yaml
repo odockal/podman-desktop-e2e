@@ -22,6 +22,9 @@ on:
         default: ''
         required: false
 
+permissions:
+  contents: read
+
 jobs:
   win-generic-server-update-e2e:
     name: ${{ matrix.os }} generic server update e2e
@@ -51,8 +54,10 @@ jobs:
     - name: Set the default env. variables
       env:
         DEFAULT_PD_REPO_OPTIONS: 'REPO=podman-desktop,FORK=podman-desktop,BRANCH=main'
+        PD_REPO_OPTIONS: ${{ github.event.inputs.pd_repo_options }}
       run: |
-        $options = "${{ github.event.inputs.pd_repo_options || env.DEFAULT_PD_REPO_OPTIONS }}"
+        "NPM_TARGET=${{ github.event.inputs.npm_target || env.DEFAULT_NPM_TARGET }}" >> $env:GITHUB_ENV
+        $options = if ($env:PD_REPO_OPTIONS) { $env:PD_REPO_OPTIONS } else { $env:DEFAULT_PD_REPO_OPTIONS }
         $options -split ',' | ForEach-Object {
             $key, $val = $_ -split '=', 2
             "PD_${key}=${val}"
@@ -64,6 +69,7 @@ jobs:
         repository: ${{ env.PD_FORK }}/${{ env.PD_REPO }}
         ref: ${{ env.PD_BRANCH }}
         path: podman-desktop
+        persist-credentials: false
  
     - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
       name: Install pnpm
@@ -201,8 +207,8 @@ jobs:
         "@
         Write-Host "Node.js HTTP check passed"
         try {
-          echo "$env:PODMAN_DESKTOP_BINARY }}"
-          pnpm test:e2e:update:run
+          echo "$env:PODMAN_DESKTOP_BINARY"
+          pnpm "$env:NPM_TARGET"
         } finally {
           Stop-Job  $serverJob -ErrorAction SilentlyContinue
           Remove-Job $serverJob -ErrorAction SilentlyContinue
@@ -256,8 +262,11 @@ jobs:
     - name: Set the default env. variables
       env:
         DEFAULT_PD_REPO_OPTIONS: 'REPO=podman-desktop,FORK=podman-desktop,BRANCH=main'
+        PD_REPO_OPTIONS: ${{ github.event.inputs.pd_repo_options }}
+        DEFAULT_NPM_TARGET: 'test:e2e:update:run'
       run: |
-        echo "${{ github.event.inputs.pd_repo_options || env.DEFAULT_PD_REPO_OPTIONS }}" | awk -F ',' \
+        echo "NPM_TARGET=${{ github.event.inputs.npm_target || env.DEFAULT_NPM_TARGET }}" >> $GITHUB_ENV
+        echo "${PD_REPO_OPTIONS:-$DEFAULT_PD_REPO_OPTIONS}" | awk -F ',' \
         '{for (i=1; i<=NF; i++) {split($i, kv, "="); print "PD_"kv[1]"="kv[2]}}' >> $GITHUB_ENV
 
     - name: Checkout podman desktop
@@ -266,6 +275,7 @@ jobs:
         repository: ${{ env.PD_FORK }}/${{ env.PD_REPO }}
         ref: ${{ env.PD_BRANCH }}
         path: podman-desktop
+        persist-credentials: false
  
     - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
       name: Install pnpm
@@ -388,14 +398,14 @@ jobs:
       run: |
         ASSET_PATH="$(pwd)/update-release-assets"
         PORT=8080
-        python3 -m http.server "$PORT" --directory "$ASSET_PATH" &
+        python3 -m http.server "$PORT" --bind 127.0.0.1 --directory "$ASSET_PATH" &
         SERVER_PID=$!
         echo "UPDATE_SERVER_PID=$SERVER_PID" >> $GITHUB_ENV
-        echo "UPDATE_SERVER_URL=http://localhost:$PORT" >> $GITHUB_ENV
+        echo "UPDATE_SERVER_URL=http://127.0.0.1:$PORT" >> $GITHUB_ENV
         # Give the server a moment to bind
         sleep 3
         # Smoke-check that the server is up and serving latest-mac.yml
-        curl -fs "http://localhost:$PORT/latest-mac.yml" | head -3
+        curl -fs "http://127.0.0.1:$PORT/latest-mac.yml" | head -3
 
     - name: Adjust/Downgrade local podman desktop version
       working-directory: ./podman-desktop
@@ -449,7 +459,7 @@ jobs:
         UPDATE_PODMAN_DESKTOP: true
       run: |
         echo "$PODMAN_DESKTOP_BINARY"
-        pnpm test:e2e:update:run
+        pnpm ${{ env.NPM_TARGET }}
 
     - name: Stop local HTTP update server
       if: always()
