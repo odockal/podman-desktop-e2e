@@ -100,12 +100,6 @@ def main():
         help='Path to configuration file (default: config.yaml)'
     )
     parser.add_argument(
-        '--daily',
-        action='store_true',
-        default=True,
-        help='Generate daily report (default)'
-    )
-    parser.add_argument(
         '--weekly',
         action='store_true',
         help='Generate weekly summary report'
@@ -227,7 +221,7 @@ def main():
     prs = pr_collector.collect(all_repos)
     print(f"  Found {len(prs)} PRs needing QE review")
 
-    cutoff = workflow_collector._get_overnight_cutoff()
+    cutoff = workflow_collector.get_overnight_cutoff()
     collection_end = datetime.now()
     print(f"🔍 Collecting workflow runs since {cutoff.strftime('%Y-%m-%d %H:%M')}...")
     workflows = workflow_collector.collect(all_repos)

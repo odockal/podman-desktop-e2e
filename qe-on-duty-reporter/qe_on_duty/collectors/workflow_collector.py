@@ -1,7 +1,7 @@
 """Collector for CI/CD workflow runs."""
 
 from typing import List, Optional
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from dateutil import parser as date_parser
 from qe_on_duty.gh_client import GHClient
 from qe_on_duty.config import Config
@@ -30,9 +30,9 @@ class WorkflowCollector:
 
         return all_workflows
 
-    def _get_overnight_cutoff(self) -> datetime:
-        """Yesterday at overnight_start_hour."""
-        now = datetime.now()
+    def get_overnight_cutoff(self) -> datetime:
+        """Yesterday at overnight_start_hour, expressed in the local timezone."""
+        now = datetime.now().astimezone()
         yesterday = now - timedelta(days=1)
         return yesterday.replace(hour=self.overnight_start_hour, minute=0, second=0, microsecond=0)
 
@@ -48,13 +48,16 @@ class WorkflowCollector:
         if self.default_pattern in workflow_name.lower():
             return True
         extra = self.repo_overrides.get(repo)
-        if extra and workflow_name in extra:
+        if extra and workflow_name.lower() in [e.lower() for e in extra]:
             return True
         return False
 
     def _collect_from_repo(self, repo: str) -> List[WorkflowData]:
-        cutoff = self._get_overnight_cutoff()
-        created_filter = f">={cutoff.strftime('%Y-%m-%dT%H:%M:%S')}"
+        cutoff = self.get_overnight_cutoff()
+        # GitHub's search qualifiers interpret an offset-less timestamp as UTC,
+        # so the local cutoff must be converted before building the query.
+        cutoff_utc = cutoff.astimezone(timezone.utc)
+        created_filter = f">={cutoff_utc.strftime('%Y-%m-%dT%H:%M:%SZ')}"
         runs = self.gh_client.run_list(repo, limit=500, created=created_filter)
 
         results = []
@@ -88,8 +91,8 @@ class WorkflowCollector:
         return WorkflowData(
             repository=repo,
             workflow_name=run.get('workflowName', run.get('name', 'unknown')),
-            workflow_id=run.get('databaseId', 0),
-            run_number=run.get('databaseId', 0),
+            workflow_id=run.get('workflowDatabaseId', 0),
+            run_number=run.get('number', 0),
             run_id=run.get('databaseId', 0),
             status=run.get('status', 'unknown'),
             conclusion=run.get('conclusion', 'unknown'),

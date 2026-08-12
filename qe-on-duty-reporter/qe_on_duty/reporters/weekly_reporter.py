@@ -87,8 +87,11 @@ class WeeklyReporter:
         )
         success_rate = (total_success / total_workflows * 100) if total_workflows > 0 else 0
 
-        total_critical_cves = sum(s.critical_cves for s in summaries)
-        total_high_cves = sum(s.high_cves for s in summaries)
+        # Use unique alert counts (not per-day summary sums) so a CVE open all
+        # week is counted once, matching the CVE Summary section below.
+        severity_counts = self._unique_alert_severities()
+        total_critical_cves = severity_counts['critical']
+        total_high_cves = severity_counts['high']
         total_bugs = sum(s.total_open_bugs for s in summaries)
 
         return f"""## Weekly Highlights
@@ -163,23 +166,23 @@ class WeeklyReporter:
 
         return "\n".join(sections)
 
+    def _unique_alert_severities(self) -> Counter:
+        """Latest severity per unique CVE alert (repository, alert_number) across the week."""
+        alert_severity = {}
+        for snapshot in self.snapshots:
+            for cve in snapshot.cves:
+                alert_key = (cve.repository, cve.alert_number)
+                alert_severity[alert_key] = cve.severity
+        return Counter(alert_severity.values())
+
     def _generate_cve_trends(self) -> str:
         """Generate CVE trends section."""
         if not self.snapshots:
             return ""
 
-        # Track the latest severity per unique alert (repository, alert_number) across all snapshots
-        alert_severity = {}
-
-        for snapshot in self.snapshots:
-            for cve in snapshot.cves:
-                alert_key = (cve.repository, cve.alert_number)
-                alert_severity[alert_key] = cve.severity
-
-        if not alert_severity:
+        severity_counts = self._unique_alert_severities()
+        if not severity_counts:
             return "## CVE Summary\n\n*No CVEs found this week.*"
-
-        severity_counts = Counter(alert_severity.values())
 
         return f"""## CVE Summary
 

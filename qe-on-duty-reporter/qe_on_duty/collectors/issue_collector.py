@@ -56,13 +56,19 @@ class IssueCollector:
         Returns:
             List of IssueData objects
         """
-        # Get issues with specified labels and state (up to the configured cap)
+        # gh's --state flag only accepts a single value; when multiple states
+        # are configured, fetch "all" and filter locally to the allowed set.
+        gh_state = self.states[0] if len(self.states) == 1 else ("all" if self.states else "open")
         issues = self.gh_client.issue_list(
             repo,
             labels=self.labels,
-            state=self.states[0] if self.states else "open",
+            state=gh_state,
             limit=self.max_results
         )
+
+        if len(self.states) > 1:
+            allowed_states = {s.lower() for s in self.states}
+            issues = [i for i in issues if i.get('state', '').lower() in allowed_states]
 
         # Filter by age if needed
         if self.max_age_days > 0:
@@ -98,5 +104,5 @@ class IssueCollector:
             state=issue['state'],
             created_at=issue['createdAt'],
             updated_at=issue['updatedAt'],
-            comments_count=issue.get('comments', 0)
+            comments_count=len(issue.get('comments') or [])
         )

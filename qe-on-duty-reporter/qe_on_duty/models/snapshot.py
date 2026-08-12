@@ -1,9 +1,15 @@
 """Data models for QE on-duty snapshots and reports."""
 
-from dataclasses import dataclass, asdict, field
-from typing import List
+from dataclasses import dataclass, asdict, field, fields
+from typing import List, Optional
 from datetime import datetime
 import json
+
+
+def _known_fields(dataclass_cls, data: dict) -> dict:
+    """Drop any keys not declared on dataclass_cls, so loading stays forward/backward compatible."""
+    field_names = {f.name for f in fields(dataclass_cls)}
+    return {k: v for k, v in data.items() if k in field_names}
 
 
 @dataclass
@@ -94,7 +100,7 @@ class DailySnapshot:
     workflows: List[WorkflowData] = field(default_factory=list)
     cves: List[CVEData] = field(default_factory=list)
     issues: List[IssueData] = field(default_factory=list)
-    summary: SummaryData = None
+    summary: Optional[SummaryData] = None
     overnight_cutoff: str = ''  # ISO timestamp: start of the overnight window used to collect workflows
     overnight_window_end: str = ''  # ISO timestamp: end of the overnight window (collection time)
 
@@ -112,11 +118,12 @@ class DailySnapshot:
         """Load snapshot from JSON file."""
         with open(filepath, 'r') as f:
             data = json.load(f)
-            # Convert nested dicts back to dataclasses
-            data['prs'] = [PRData(**pr) for pr in data.get('prs') or []]
-            data['workflows'] = [WorkflowData(**wf) for wf in data.get('workflows') or []]
-            data['cves'] = [CVEData(**cve) for cve in data.get('cves') or []]
-            data['issues'] = [IssueData(**issue) for issue in data.get('issues') or []]
+            # Convert nested dicts back to dataclasses, ignoring any unknown
+            # keys so snapshots from older/newer script versions still load.
+            data['prs'] = [PRData(**_known_fields(PRData, pr)) for pr in data.get('prs') or []]
+            data['workflows'] = [WorkflowData(**_known_fields(WorkflowData, wf)) for wf in data.get('workflows') or []]
+            data['cves'] = [CVEData(**_known_fields(CVEData, cve)) for cve in data.get('cves') or []]
+            data['issues'] = [IssueData(**_known_fields(IssueData, issue)) for issue in data.get('issues') or []]
             if data.get('summary'):
-                data['summary'] = SummaryData(**data['summary'])
-            return cls(**data)
+                data['summary'] = SummaryData(**_known_fields(SummaryData, data['summary']))
+            return cls(**_known_fields(cls, data))

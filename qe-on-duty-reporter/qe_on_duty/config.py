@@ -37,6 +37,12 @@ class Config:
         self.domains_json_path = repo_config.get('domains_json') or ''
         self.domains_user_name = repo_config.get('domains_user_name') or ''
 
+        if self.domains_json_path and not os.path.exists(self.domains_json_path):
+            print(
+                f"⚠️  repositories.domains_json is set to '{self.domains_json_path}' "
+                "but that file does not exist - domain-owned repositories will be skipped"
+            )
+
         # Output settings
         output_config = config.get('output') or {}
         self.output_base_dir = output_config.get('base_dir') or 'output'

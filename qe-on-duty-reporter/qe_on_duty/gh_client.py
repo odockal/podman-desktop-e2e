@@ -164,7 +164,7 @@ class GHClient:
             "run", "list",
             "--repo", repo,
             "--limit", str(limit),
-            "--json", "databaseId,name,status,conclusion,workflowName,headBranch,headSha,createdAt,updatedAt,url"
+            "--json", "databaseId,number,workflowDatabaseId,name,status,conclusion,workflowName,headBranch,headSha,createdAt,updatedAt,url"
         ]
         if status:
             args.extend(["--status", status])

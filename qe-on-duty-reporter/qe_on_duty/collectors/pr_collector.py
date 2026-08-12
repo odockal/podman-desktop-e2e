@@ -90,7 +90,14 @@ class PRCollector:
         assignees = [assignee['login'] for assignee in pr.get('assignees', [])]
         requested_users, requested_teams = self._parse_review_requests(pr)
 
-        has_qe_team = any(team in requested_teams for team in self.qe_teams)
+        # Config may list a team as either "qe-reviewers" or the slug form
+        # "org/qe-reviewers"; GitHub always reports the requested team's plain
+        # name (no org prefix), so compare on the short name either way.
+        has_qe_team = any(
+            team.rsplit('/', 1)[-1] == req_team
+            for team in self.qe_teams
+            for req_team in requested_teams
+        )
         has_qe_reviewer = any(a in self.qe_reviewers for a in assignees) or \
             any(u in self.qe_reviewers for u in requested_users)
 
