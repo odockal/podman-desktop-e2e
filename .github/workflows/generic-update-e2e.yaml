@@ -55,8 +55,9 @@ jobs:
       env:
         DEFAULT_PD_REPO_OPTIONS: 'REPO=podman-desktop,FORK=podman-desktop,BRANCH=main'
         PD_REPO_OPTIONS: ${{ github.event.inputs.pd_repo_options }}
+        DEFAULT_NPM_TARGET: 'test:e2e:update:run'
       run: |
-        "NPM_TARGET=${{ github.event.inputs.npm_target || env.DEFAULT_NPM_TARGET }}" >> $env:GITHUB_ENV
+        echo "NPM_TARGET=${{ github.event.inputs.npm_target || env.DEFAULT_NPM_TARGET }}" >> $env:GITHUB_ENV
         $options = if ($env:PD_REPO_OPTIONS) { $env:PD_REPO_OPTIONS } else { $env:DEFAULT_PD_REPO_OPTIONS }
         $options -split ',' | ForEach-Object {
             $key, $val = $_ -split '=', 2
