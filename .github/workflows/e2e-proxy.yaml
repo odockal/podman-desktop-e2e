@@ -87,6 +87,9 @@ jobs:
       run: |
         echo "NPM_TARGET=${NPM_TARGET_VALUE}" >> "$GITHUB_ENV"
         echo "KIND_PROVIDER=${KIND_PROVIDER_VALUE}" >> "$GITHUB_ENV"
+        echo "FORK=${FORK}" >> "$GITHUB_ENV"
+        echo "BRANCH=${BRANCH}" >> "$GITHUB_ENV"
+        echo "REPOSITORY=${REPOSITORY}" >> "$GITHUB_ENV"
 
     - name: Checkout podman desktop
       uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
